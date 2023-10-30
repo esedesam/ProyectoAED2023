@@ -117,19 +117,109 @@ output:
     extra_dependencies: longtable
 ---
 
+```{r setup, echo = FALSE}
+library(kableExtra)
+library(readxl)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
 # Datos seleccionados
 
-Hemos escogido los datos de variaciones residenciales en 2021 del INE. Estos datos están disponibles en el siguiente enlace [https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469](https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469).
+Hemos escogido los datos de variaciones residenciales en 2021 del INE. Estos datos están disponibles en el siguiente enlace <https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469>.
 
-Adicionalmente, hemos empleado la relación de municipios de 2021 [https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469](https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469).
+Adicionalmente, hemos empleado la relación de municipios de 2021 <https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469>.
 
 # Previsualización de los datos
 
 En el fichero principal de datos `md_EVR_2021.txt`, observamos que cada registro contiene una cadena de caracteres de longitud fija. Su interpretación viene detallada en el fichero adicional `dr_EVR_2021.xlsx`.
 
 ```{r preview}
-getwd()
 raw_data_preview <- readLines('./data/md_EVR_2021.txt', n = 3)
-raw_data_preview
+kable(raw_data_preview)
 ```
 
+# Lectura de los ficheros
+
+```{r}
+data_file <- "./data/md_EVR_2021.txt"
+raw_data <- readLines(data_file, encoding = "UTF-8")
+
+excel_file_path <- "./data/dr_EVR_2021.xlsx"
+main_sheet <- "Diseño"
+vars_table <- read_excel(var_table_file, sheet = "Diseño", range = "A2:H19", col_names = TRUE)
+
+sheet_names <- excel_sheets(excel_file_path)
+sheet_list <- list()
+
+for (sheet_name in sheet_names[sheet_names != "Diseño"]) {
+  sheet_data <- read_excel(excel_file_path, sheet = sheet_name, col_names = FALSE)
+  sheet_list[[sheet_name]] <- sheet_data
+}
+```
+
+# Preprocesado
+
+## Limpieza de longitud incorrecta
+
+```{r}
+entry_length <- vars_table$Longitud[vars_table$Variable == "TOTAL"]
+
+filtered_raw_data <- raw_data[nchar(raw_data) == entry_length]
+
+vars_table <- vars_table[vars_table$Variable != "TOTAL", ]
+```
+
+## Creación del dataframe
+
+```{r}
+splitted_raw_data <- list()
+
+for (var_idx in 1:nrow(vars_table)) {
+  
+  aux <- substr(
+    filtered_raw_data,
+    vars_table$Posición[var_idx],
+    vars_table$Posición[var_idx] + vars_table$Longitud[var_idx] - 1)
+  
+  splitted_raw_data[[vars_table$Variable[var_idx]]] <- aux
+}
+
+df <- data.frame(splitted_raw_data)
+```
+
+## Leemos los diccionarios de las variables del excel y sustituimos el código por la descripción.
+
+```{r}
+vars_with_dict <- which(!is.na(vars_table$`Diccionario de la variable`))
+
+for (var_idx in vars_with_dict) {
+    
+  # Leemos el nombre del diccionario y en que hoja está
+  dict_name  <- vars_table$`Diccionario de la variable`[var_idx]
+  dict_sheet <- vars_table$`Diccionario ubicado en la hoja…`[var_idx]
+  
+  # Cogemos la hoja y buscamos el comienzo diccionario
+  aux_table <- sheet_list[[dict_sheet]]
+  dict_pos <- which(aux_table == dict_name, arr.ind = TRUE)
+  
+  # Miramos donde acaba el diccionario
+  dict_row_end <- dict_pos[1]
+  while ( (dict_row_end + 1) <= nrow(aux_table) ) {
+    
+    if ( is.na(aux_table[[(dict_row_end + 1), dict_pos[2]]]) ) {
+      break
+    }
+    dict_row_end <- dict_row_end + 1
+  }
+  
+  # Creamos una tabla con el diccionario
+  dict_df <- aux_table[(dict_pos[1] + 1):dict_row_end, dict_pos[2]:(dict_pos[2] + 1)]
+  colnames(dict_df) <- unlist(dict_df[1, ])
+  dict_df <- dict_df[-1, ]
+  
+  # Sustituimos los caracteres por su valor segun el diccionario
+  values <- dict_df$Descripción[match(df[[vars_table$Variable[var_idx]]], dict_df$Código)]
+  df[vars_table$Variable[var_idx]] <- values
+  
+}
+```

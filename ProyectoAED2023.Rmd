@@ -1,97 +1,135 @@
 ---
-title: "ProyectoAED2023"
-author: "Samuel Ortega & Javier Hinarejos"
-date: "2023-10-29"
-output: html_document
+title: Proyecto Análisis Exploratorio de Datos 2023
+author:
+  - name: Javier Hinarejos Albero
+    affil: 1, \dagger
+  - name: Samuel Ortega Mediavilla
+    affil: 1, \dagger, *
+affiliation:
+  - num: 1
+    address: |
+      Universitat de València - 
+      Escuela Técnica Superior de Ingeniería
+      Avenida de la Universitat s/n 46100 Burjassot. Valencia. España
+# author citation list in chicago format
+authorcitation: |
+  Hinarejos, J.; Ortega, S.
+# firstnote to eighthnote
+firstnote: |
+  These authors contributed equally to this work.
+correspondence: |
+  saorme@alumni.uv.es.
+# document options
+journal: notspecified
+type: article
+status: submit
+# front matter
+simplesummary: |
+  A Simple summary goes here.
+abstract: |
+  A single paragraph of about 200 words maximum. For research articles, 
+  abstracts should give a pertinent overview of the work. We strongly encourage
+  authors to use the following style of structured abstracts, but without 
+  headings: 1) Background: Place the question addressed in a broad context and
+  highlight the purpose of the study; 2) Methods: Describe briefly the main
+  methods or treatments applied; 3) Results: Summarize the article's main 
+  findings; and 4) Conclusion: Indicate the main conclusions or interpretations. 
+  The abstract should be an objective representation of the article, it must not 
+  contain results which are not presented and substantiated in the main text and 
+  should not exaggerate the main conclusions.
+# back matter
+keywords: |
+  keyword 1; keyword 2; keyword 3 (list three to ten pertinent keywords specific 
+  to the article, yet reasonably common within the subject discipline.).
+acknowledgement: |
+  All sources of funding of the study should be disclosed. Please clearly 
+  indicate grants that you have received in support of your research work. 
+  Clearly state if you received funds for covering the costs to publish in open 
+  access.
+authorcontributions: |
+  For research articles with several authors, a short paragraph specifying their 
+  individual contributions must be provided. The following statements should be 
+  used ``X.X. and Y.Y. conceive and designed the experiments; X.X. performed the 
+  experiments; X.X. and Y.Y. analyzed the data; W.W. contributed 
+  reagents/materials/analysis tools; Y.Y. wrote the paper.'' Authorship must be
+  limited to those who have contributed substantially to the work reported.
+funding: |
+  This research received no external funding.
+institutionalreview: |
+  In this section, you should add the Institutional Review Board Statement and 
+  approval number, if relevant to your study. You might choose to exclude 
+  this statement if the study did not require ethical approval. Please note 
+  that the Editorial Office might ask you for further information. Please add 
+  “The study was conducted in accordance with the Declaration of Helsinki, 
+  and approved by the Institutional Review Board (or Ethics Committee) of 
+  NAME OF INSTITUTE (protocol code XXX and date of approval).” for studies 
+  involving humans. OR “The animal study protocol was approved by the 
+  Institutional Review Board (or Ethics Committee) of NAME OF INSTITUTE 
+  (protocol code XXX and date of approval).” for studies involving animals. 
+  OR “Ethical review and approval were waived for this study due to REASON 
+  (please provide a detailed justification).” OR “Not applicable” for
+   studies not involving humans or animals.
+informedconsent: |
+  Any research article describing a study involving humans should contain this 
+  statement. Please add ``Informed consent was obtained from all subjects 
+  involved in the study.'' OR ``Patient consent was waived due to REASON 
+  (please provide a detailed justification).'' OR ``Not applicable'' for 
+  studies not involving humans. You might also choose to exclude this statement 
+  if the study did not involve humans.
+  
+  Written informed consent for publication must be obtained from participating 
+  patients who can be identified (including by the patients themselves). Please 
+  state ``Written informed consent has been obtained from the patient(s) to 
+  publish this paper'' if applicable.
+dataavailability: |
+  We encourage all authors of articles published in MDPI journals to share 
+  their research data. In this section, please provide details regarding where 
+  data supporting reported results can be found, including links to publicly 
+  archived datasets analyzed or generated during the study. Where no new data 
+  were created, or where data is unavailable due to privacy or ethical 
+  re-strictions, a statement is still required. Suggested Data Availability 
+  Statements are available in section “MDPI Research Data Policies” at 
+  \url{https://www.mdpi.com/ethics}.
+conflictsofinterest: |
+  Declare conflicts of interest or state 'The authors declare no conflict of 
+  interest.' Authors must identify and declare any personal circumstances or
+  interest that may be perceived as inappropriately influencing the
+  representation or interpretation of reported research results. Any role of the
+  funding sponsors in the design of the study; in the collection, analyses or 
+  interpretation of data in the writing of the manuscript, or in the decision to 
+  publish the results must be declared in this section. If there is no role, 
+  please state 'The founding sponsors had no role in the design of the study; 
+  in the collection, analyses, or interpretation of data; in the writing of the 
+  manuscript, an in the decision to publish the results'.
+sampleavailability: |
+  Samples of the compounds ...... are available from the authors.
+supplementary: |
+ The following supporting information can be downloaded at:  
+ \linksupplementary{s1}, Figure S1: title; Table S1: title; Video S1: title.
+abbreviations:
+  - short: INE
+    long: Instituto Nacional de Estadística
+bibliography: mybibfile.bib
+appendix: appendix.tex
+endnotes: false
+output: 
+  rticles::mdpi_article:
+    extra_dependencies: longtable
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(readxl)
-rm(list = ls())
-```
+# Datos seleccionados
 
-Cargar datos a R.
+Hemos escogido los datos de variaciones residenciales en 2021 del INE. Estos datos están disponibles en el siguiente enlace [https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469](https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469).
 
-```{r}
-data_file <- "./data/md_EVR_2021.txt"
-raw_data <- readLines(data_file, encoding = "UTF-8")
+Adicionalmente, hemos empleado la relación de municipios de 2021 [https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469](https://www.ine.es/dyngs/INEbase/es/operacion.htm?c=Estadistica_C&cid=1254736177013&menu=resultados&secc=1254736195469&idp=1254734710990#!tabs-1254736195469).
 
-excel_file_path <- "./data/dr_EVR_2021.xlsx"
-main_sheet <- "Diseño"
-vars_table <- read_excel(var_table_file, sheet = "Diseño", range = "A2:H19", col_names = TRUE)
+# Previsualización de los datos
 
-sheet_names <- excel_sheets(excel_file_path)
-sheet_list <- list()
+En el fichero principal de datos `md_EVR_2021.txt`, observamos que cada registro contiene una cadena de caracteres de longitud fija. Su interpretación viene detallada en el fichero adicional `dr_EVR_2021.xlsx`.
 
-for (sheet_name in sheet_names[sheet_names != "Diseño"]) {
-  sheet_data <- read_excel(excel_file_path, sheet = sheet_name, col_names = FALSE)
-  sheet_list[[sheet_name]] <- sheet_data
-}
-```
-
-Limpiar entradas con longitud incorrecta. Eliminamos la última fila de la tabla.
-
-```{r}
-entry_length <- vars_table$Longitud[vars_table$Variable == "TOTAL"]
-
-filtered_raw_data <- raw_data[nchar(raw_data) == entry_length]
-
-vars_table <- vars_table[vars_table$Variable != "TOTAL", ]
-```
-
-Creamos el dataframe.
-
-```{r}
-splitted_raw_data <- list()
-
-for (var_idx in 1:nrow(vars_table)) {
-  
-  aux <- substr(
-    filtered_raw_data,
-    vars_table$Posición[var_idx],
-    vars_table$Posición[var_idx] + vars_table$Longitud[var_idx] - 1)
-  
-  splitted_raw_data[[vars_table$Variable[var_idx]]] <- aux
-}
-
-df <- data.frame(splitted_raw_data)
-```
-
-Leemos los diccionarios de las variables del excel y sustituimos el código por la descripción.
-
-```{r}
-vars_with_dict <- which(!is.na(vars_table$`Diccionario de la variable`))
-
-for (var_idx in vars_with_dict) {
-    
-  # Leemos el nombre del diccionario y en que hoja está
-  dict_name  <- vars_table$`Diccionario de la variable`[var_idx]
-  dict_sheet <- vars_table$`Diccionario ubicado en la hoja…`[var_idx]
-  
-  # Cogemos la hoja y buscamos el comienzo diccionario
-  aux_table <- sheet_list[[dict_sheet]]
-  dict_pos <- which(aux_table == dict_name, arr.ind = TRUE)
-  
-  # Miramos donde acaba el diccionario
-  dict_row_end <- dict_pos[1]
-  while ( (dict_row_end + 1) <= nrow(aux_table) ) {
-    
-    if ( is.na(aux_table[[(dict_row_end + 1), dict_pos[2]]]) ) {
-      break
-    }
-    dict_row_end <- dict_row_end + 1
-  }
-  
-  # Creamos una tabla con el diccionario
-  dict_df <- aux_table[(dict_pos[1] + 1):dict_row_end, dict_pos[2]:(dict_pos[2] + 1)]
-  colnames(dict_df) <- unlist(dict_df[1, ])
-  dict_df <- dict_df[-1, ]
-  
-  # Sustituimos los caracteres por su valor segun el diccionario
-  values <- dict_df$Descripción[match(df[[vars_table$Variable[var_idx]]], dict_df$Código)]
-  df[vars_table$Variable[var_idx]] <- values
-  
-}
+```{r preview}
+getwd()
+raw_data_preview <- readLines('./data/md_EVR_2021.txt', n = 3)
+raw_data_preview
 ```
 

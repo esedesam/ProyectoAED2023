@@ -146,7 +146,7 @@ raw_data <- readLines(data_file, encoding = "UTF-8")
 
 excel_file_path <- "./data/dr_EVR_2021.xlsx"
 main_sheet <- "Diseño"
-vars_table <- read_excel(var_table_file, sheet = "Diseño", range = "A2:H19", col_names = TRUE)
+vars_table <- read_excel(excel_file_path, sheet = "Diseño", range = "A2:H19", col_names = TRUE)
 
 sheet_names <- excel_sheets(excel_file_path)
 sheet_list <- list()

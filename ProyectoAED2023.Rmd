@@ -146,15 +146,20 @@ raw_data <- readLines(data_file, encoding = "UTF-8")
 
 excel_file_path <- "./data/dr_EVR_2021.xlsx"
 main_sheet <- "Diseño"
-vars_table <- read_excel(excel_file_path, sheet = "Diseño", range = "A2:H19", col_names = TRUE)
+vars_table <- read_excel(excel_file_path, sheet = "Diseño",
+                         range = "A2:J19", col_names = TRUE)
 
 sheet_names <- excel_sheets(excel_file_path)
 sheet_list <- list()
 
 for (sheet_name in sheet_names[sheet_names != "Diseño"]) {
-  sheet_data <- read_excel(excel_file_path, sheet = sheet_name, col_names = FALSE)
+  sheet_data <- read_excel(excel_file_path, sheet = sheet_name,
+                           col_names = FALSE)
   sheet_list[[sheet_name]] <- sheet_data
 }
+
+municipios_file <- "./data/diccionario21.xlsx"
+relacion_municipios <- read_excel(municipios_file, skip = 1, col_names = TRUE)
 ```
 
 # Preprocesado
@@ -166,6 +171,7 @@ entry_length <- vars_table$Longitud[vars_table$Variable == "TOTAL"]
 
 filtered_raw_data <- raw_data[nchar(raw_data) == entry_length]
 
+# No necesitamos la última entrada para nada más
 vars_table <- vars_table[vars_table$Variable != "TOTAL", ]
 ```
 
@@ -184,12 +190,16 @@ for (var_idx in 1:nrow(vars_table)) {
   splitted_raw_data[[vars_table$Variable[var_idx]]] <- aux
 }
 
-df <- data.frame(splitted_raw_data)
+raw_data_df <- data.frame(splitted_raw_data)
 ```
 
-## Leemos los diccionarios de las variables del excel y sustituimos el código por la descripción.
+## Interpretación de los códigos de las variables
+
+Leemos los diccionarios de las variables del excel y sustituimos el código por la descripción.
 
 ```{r}
+data_df <- raw_data_df
+
 vars_with_dict <- which(!is.na(vars_table$`Diccionario de la variable`))
 
 for (var_idx in vars_with_dict) {
@@ -198,11 +208,11 @@ for (var_idx in vars_with_dict) {
   dict_name  <- vars_table$`Diccionario de la variable`[var_idx]
   dict_sheet <- vars_table$`Diccionario ubicado en la hoja…`[var_idx]
   
-  # Cogemos la hoja y buscamos el comienzo diccionario
+  # Cogemos la hoja y buscamos el comienzo del diccionario
   aux_table <- sheet_list[[dict_sheet]]
   dict_pos <- which(aux_table == dict_name, arr.ind = TRUE)
   
-  # Miramos donde acaba el diccionario
+  # Buscamos donde acaba el diccionario
   dict_row_end <- dict_pos[1]
   while ( (dict_row_end + 1) <= nrow(aux_table) ) {
     
@@ -217,9 +227,33 @@ for (var_idx in vars_with_dict) {
   colnames(dict_df) <- unlist(dict_df[1, ])
   dict_df <- dict_df[-1, ]
   
-  # Sustituimos los caracteres por su valor segun el diccionario
-  values <- dict_df$Descripción[match(df[[vars_table$Variable[var_idx]]], dict_df$Código)]
-  df[vars_table$Variable[var_idx]] <- values
-  
+  # Sustituimos los códigos por su valor segun el diccionario
+  values <- dict_df$Descripción[match(raw_data_df[[vars_table$Variable[var_idx]]], dict_df$Código)]
+  data_df[vars_table$Variable[var_idx]] <- values
+  # Probar con factors levels y labels en vez de match
 }
 ```
+
+```{r}
+# Interpretación las variables de municipios
+
+dict_municipios <- sheet_list$`Anexo - Lista de países`[-4:-1,1:2] # mejorable
+colnames(dict_municipios) <- dict_municipios[1,]
+dict_municipios <- dict_municipios[-1,]
+relacion_municipios <- relacion_municipios[c("CMUN", "NOMBRE")]
+colnames(relacion_municipios) <- colnames(dict_municipios) # arreglar con orden
+dict_municipios <- rbind(dict_municipios, relacion_municipios)
+
+vars_municipio <- which(!is.na(vars_table$Observaciones))
+
+for (var_idx in vars_municipio) {
+  values <- dict_municipios$Descripción[match(raw_data_df[[vars_table$Variable[var_idx]]], dict_municipios$Código)]
+  data_df[vars_table$Variable[var_idx]] <- values
+}
+```
+
+```{r}
+unique(raw_data_df$MUNIALTA[is.na(data_df$MUNIALTA)])
+colSums(is.na(data_df))
+```
+

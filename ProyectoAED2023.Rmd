@@ -257,3 +257,16 @@ unique(raw_data_df$MUNIALTA[is.na(data_df$MUNIALTA)])
 colSums(is.na(data_df))
 ```
 
+A continuación, vamos a cambiar el tipo de las variables para tenerlas en el formato adecuado. Para ello, en primer lugar, escribimos un fichero csv con el formato actual de los datos.
+
+```{r}
+write.csv(data_df, './data/data.csv',row.names = FALSE)
+```
+
+Seguidamente, mediante el argumento col_types de read_csv cambiamos el formato de las columnas al formato deseado.
+```{r}
+library(readr)
+data <- read_csv("./data/data.csv", col_types = cols(EDAD = col_number(), 
+    MESNAC = col_number(), ANONAC = col_number(), 
+    MESVAR = col_number(), ANOVAR = col_number()))
+```

@@ -276,11 +276,57 @@ apply_dict_to_variable <- function(codes, dict) {
     labels = dict$value)
   return(values)
 }
+
+check_na_procedence <- function(raw_data_df, data_df) {
+  
+  if ( any(colnames(raw_data_df) != colnames(data_df)) ) {
+    stop("check_na_procedence: Both data.frame objects must have the same variables.")
+  }
+  
+  na_count <- colSums(is.na(data_df))
+  vars_with_na <- names(which(na_count > 0))
+  
+  if (length(vars_with_na) < 1) {
+    
+    print("check_na_procedence: No NAs introduced in data.frame.")
+    return(NULL)
+    
+  } else if (length(vars_with_na) < length(colnames(data_df))) {
+    
+    print("check_na_procedence: Ommiting values with 0 NAs in summary table.")
+  }
+  
+  na_df <- data.frame(
+    variable = vars_with_na,
+    introduced_na = na_count[vars_with_na],
+    row.names = NULL)
+  
+  messages <- c()
+  for (var_name in na_df$variable) {
+    
+    lost_values <- unique(raw_data_df[is.na(data_df[[var_name]]), var_name])
+    
+    all_spaces_or_tabs <- all(grepl("^[ \t]*$", lost_values))
+    
+    if ( all_spaces_or_tabs ) {
+      
+      message <- "All NAs correspond to empty entries."
+      
+    } else {
+      
+      message <- paste("Lost values:",
+                           paste(lost_values, collapse = ", "), sep = " ")
+    }
+    messages <- c(messages, message)
+  }
+  na_df["message"] <- messages
+  return(na_df)
+}
 ```
 
 # Lectura de los ficheros
 
-```{r}
+```{r load-files}
 data_file <- "./data/md_EVR_2021.txt"
 excel_dict_file <- "./data/dr_EVR_2021.xlsx"
 main_sheet <- "Diseño"
@@ -296,7 +342,7 @@ vars_table <- read_excel(excel_dict_file, sheet = main_sheet,
 
 ## Limpieza de longitud incorrecta
 
-```{r}
+```{r check-length}
 entry_length <- vars_table$Longitud[vars_table$Variable == "TOTAL"]
 
 filtered_raw_data <- raw_data[nchar(raw_data) == entry_length]
@@ -307,7 +353,7 @@ vars_table <- vars_table[vars_table$Variable != "TOTAL", ]
 
 ## Creación del dataframe
 
-```{r}
+```{r split-data}
 splitted_raw_data <- list()
 
 for (var_idx in 1:nrow(vars_table)) {
@@ -326,7 +372,7 @@ raw_data_df <- data.frame(splitted_raw_data)
 
 ## Obtención de los diccionarios
 
-```{r}
+```{r get-dicts}
 sheet_list <- load_excel_dicts(excel_dict_file)
 municipios_data <- read_excel(municipios_file, skip = 1,
                                   col_names = TRUE)
@@ -339,15 +385,14 @@ dict_info <- get_dict_from_sheets(dict_list, sheet_list, municipios_data)
 
 Leemos los diccionarios de las variables del excel y sustituimos el código por la descripción.
 
-```{r}
+```{r apply-dicts}
 data_df <- apply_dict_to_data(raw_data_df, dict_info, dict_list)
 ```
 
-```{r}
-# Automatizar -> check_na_procedence
-var_name <- "TAMUNACI"
-unique(raw_data_df[is.na(data_df[[var_name]]), var_name])
-colSums(is.na(data_df))
+```{r check-na}
+na_summary <- check_na_procedence(raw_data_df, data_df)
+
+kable(na_summary)
 ```
 
 A continuación, vamos a cambiar el tipo de las variables para tenerlas en el formato adecuado. Para ello, en primer lugar, escribimos un fichero csv con el formato actual de los datos.

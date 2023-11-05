@@ -246,8 +246,11 @@ get_dict_from_sheets <- function(dict_list, sheet_list, aditional_data) {
 
 prepare_aditional_data <- function(aditional_data, col_names) {
   
-  aditional_data <- aditional_data[c("CMUN", "NOMBRE")]
-  colnames(aditional_data) <- col_names
+  if (any(colnames(aditional_data) != col_names)) {
+    
+    aditional_data <- aditional_data[c("CMUN", "NOMBRE")]
+    colnames(aditional_data) <- col_names
+  }
   return(aditional_data)
 }
 
@@ -267,7 +270,10 @@ apply_dict_to_data <- function(data_df, dict_info, dict_list) {
 
 apply_dict_to_variable <- function(codes, dict) {
   
-  values <- dict$value[match(codes, dict$code)]
+  values <- factor(
+    x = codes,
+    levels = dict$code,
+    labels = dict$value)
   return(values)
 }
 ```

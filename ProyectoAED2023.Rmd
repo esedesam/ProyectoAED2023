@@ -133,7 +133,7 @@ if (!require(pacman)) {
   install.packages("pacman")
   library(pacman)
 }
-pacman::p_load(kableExtra, readxl)
+pacman::p_load(kableExtra, readxl, tidyr, dplyr)
 ```
 
 # Datos seleccionados
@@ -244,16 +244,9 @@ na_summary <- check_na_procedence(raw_data_df, data_df)
 kable(na_summary)
 ```
 
-A continuación, vamos a cambiar el tipo de las variables para tenerlas en el formato adecuado. Para ello, en primer lugar, escribimos un fichero csv con el formato actual de los datos.
+A continuación, vamos a cambiar el tipo de las variables para tenerlas en el formato adecuado indicado en los metadatos.
 
-```{r}
-write.csv(data_df, './data/data.csv',row.names = FALSE)
+```{r convert-num}
+data_df <- convert_numeric_vars(data_df, vars_table)
 ```
 
-Seguidamente, mediante el argumento col_types de read_csv cambiamos el formato de las columnas al formato deseado.
-```{r}
-library(readr)
-data <- read_csv("./data/data.csv", col_types = cols(EDAD = col_number(),
-    MESNAC = col_number(), ANONAC = col_number(),
-    MESVAR = col_number(), ANOVAR = col_number()))
-```

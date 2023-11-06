@@ -179,3 +179,14 @@ check_na_procedence <- function(raw_data_df, data_df) {
   na_df["message"] <- messages
   return(na_df)
 }
+
+convert_numeric_vars <- function(data_df, vars_table) {
+  
+  is_numeric <- vars_table$Tipo == "N"
+  
+  for (var_name in vars_table$Variable[is_numeric]) {
+    
+    data_df[var_name] <- as.numeric(data_df[[var_name]])
+  }
+  return(data_df)
+}

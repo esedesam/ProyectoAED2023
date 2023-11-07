@@ -133,7 +133,7 @@ if (!require(pacman)) {
   install.packages("pacman")
   library(pacman)
 }
-pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr)
+pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras2, sf)
 ```
 
 # Datos seleccionados
@@ -235,5 +235,14 @@ A continuación, vamos a cambiar el tipo de las variables para tenerlas en el fo
 
 ```{r convert-num}
 data_df <- convert_numeric_vars(data_df, vars_table)
+```
+
+```{r plot-prov}
+dict_prov <- get_prov_location(fileDir = "./data/prov_locations.RData")
+
+selected_prov <- "Palencia"
+prov_data <- get_net_movements(data_df, selected_prov)
+residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, selected_prov)
+residence_variations_map
 ```
 

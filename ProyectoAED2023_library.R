@@ -11,7 +11,7 @@ if (!require(pacman)) {
   install.packages("pacman")
   library(pacman)
 }
-pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr)
+pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras2, sf)
 
 split_raw_data <- function(filtered_raw_data, vars_table) {
   
@@ -246,4 +246,162 @@ convert_numeric_vars <- function(data_df, vars_table) {
     data_df[var_name] <- as.numeric(data_df[[var_name]])
   }
   return(data_df)
+}
+
+get_prov_location <- function(fileDir, googleKey = NULL, useKey = FALSE) {
+  
+  generate_prov_locations <- function(dict_prov, fileDir, googleKey, useKey) {
+    
+    if (useKey) {
+      dict_prov <- dict_info[dict_info$name == "T_PROV", ]
+      if ("name" %in% colnames(dict_prov)) {
+        dict_prov <- dict_prov %>%
+          select(-name) %>%
+          mutate(long = NA, lat = NA)
+      }
+      if (!ggmap::has_google_key()) {
+        ggmap::register_google(key = googleKey)
+      }
+      for (prov_name in dict_prov$value) {
+        if (prov_name == "Extranjero") {
+          search_name <- "France"
+        } else {
+          search_name <- paste0(prov_name, ", Spain")
+        }
+        prov_location <-geocode(search_name)
+
+        dict_prov$long[dict_prov$value == prov_name] <- prov_location[["lon"]]
+        dict_prov$lat[dict_prov$value == prov_name]  <- prov_location[["lat"]]
+      }
+      save(
+        dict_prov, 
+        file =  fileDir)
+    } else {
+      stop("Para generar la tabla de localizaciones de provincias, añada el argumento googleKey y useKey = TRUE.")
+    }
+    return(dict_prov)
+  }
+  
+  if (file.exists(fileDir)) {
+    
+    load(fileDir) # -> dict_prov
+    
+  } else {
+    
+    dict_prov <- generate_prov_locations(dict_info, fileDir, googleKey, useKey)
+  }
+  return(dict_prov)
+}
+
+get_net_movements <- function(data_df, selected_prov) {
+  
+  prov_data <- data_df %>%
+    select(PROVBAJA, PROVALTA) %>%
+    filter(xor(PROVBAJA == selected_prov, PROVALTA == selected_prov)) %>%
+    group_by(value = factor(
+      x = ifelse(PROVBAJA == selected_prov, PROVALTA, PROVBAJA),
+      levels = 1:length(levels(PROVALTA)),
+      labels = levels(PROVALTA))) %>%
+    summarise(net_count = sum(ifelse(PROVBAJA == selected_prov, -1, 1)))
+  
+  return(prov_data)
+}
+
+plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
+  
+  selected_prov_coords <- dict_prov %>%
+    filter(value == selected_prov)
+  
+  target_provs <- dict_prov %>%
+    filter(value != selected_prov) %>%
+    filter(value %in% prov_data$value)
+  
+  col_names <- c("value", "geom", "description")
+  line_data <- data.frame(matrix(nrow = 0, ncol = length(col_names)))
+  colnames(line_data) <- col_names
+  
+  for (i in 1:nrow(prov_data)) {
+    
+    this_prov <- list()
+    
+    target_prov <- prov_data$value[i]
+    target_coords <- target_provs %>%
+      filter(value == target_prov) %>%
+      select(long, lat)
+    
+    this_prov$value <- as.character( abs(prov_data$net_count[i]) )
+    
+    if (prov_data$net_count[i] > 0) {
+      
+      this_prov$geom <- paste0(
+        "LINESTRING(", selected_prov_coords$long, " ",
+        selected_prov_coords$lat, ",",
+        target_coords$long, " ",
+        target_coords$lat, ")")
+      
+      this_prov$description <- paste0(
+        selected_prov, "-", target_prov)
+    
+    } else {
+      
+      this_prov$geom <- paste0(
+        "LINESTRING(", target_coords$long, " ",
+        target_coords$lat, ",",
+        selected_prov_coords$long, " ",
+        selected_prov_coords$lat, ")")
+      
+      this_prov$description <- paste0(
+        target_prov, "-", selected_prov)
+    }
+    line_data <- rbind(line_data, this_prov)
+  }
+  
+  line_data <- st_as_sf(line_data, wkt = "geom")
+  
+  color_scale <- colorNumeric(
+    palette = "RdYlBu",
+    domain = abs(prov_data$net_count))
+  
+  residence_variations_map <- leaflet(
+    data = target_provs) %>%
+    addTiles(urlTemplate = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
+    addCircleMarkers(
+      radius = 5,
+      color = "blue",
+      label = ~value,
+      group = "Provincias") %>%
+    addCircleMarkers(
+      data = selected_prov_coords,
+      radius = 4,
+      color = "red",
+      popup = ~value,
+      group = "Provincia seleccionada")
+  
+  for (i in 1 : nrow(line_data)) {
+    
+    residence_variations_map <- residence_variations_map %>%
+      addArrowhead(
+        data = line_data[i, ],
+        color = color_scale(abs(prov_data$net_count[i])),
+        label = ~description,
+        popup = ~value,
+        weight = 2,
+        opacity = 1,
+        options = arrowheadOptions(
+          yawn = 45,
+          size = "10000m"
+        ),
+        group = "Variaciones residenciales")
+  }
+  residence_variations_map <- residence_variations_map %>%
+    addLegend(
+      values = abs(prov_data$net_count),
+      pal = color_scale,
+      title = "Número de desplazados",
+      position = "bottomright",
+      group = "Variaciones residenciales") %>%
+    addLayersControl(
+      overlayGroups = c("Provincias", "Provincia seleccionada", "Variaciones residenciales"))
+  
+  return(residence_variations_map)
 }

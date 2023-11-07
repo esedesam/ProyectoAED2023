@@ -133,7 +133,7 @@ if (!require(pacman)) {
   install.packages("pacman")
   library(pacman)
 }
-pacman::p_load(kableExtra, readxl, tidyr, dplyr)
+pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras2, sf)
 ```
 
 # Datos seleccionados
@@ -199,20 +199,7 @@ vars_table <- vars_table[vars_table$Variable != "TOTAL", ]
 Dividimos los datos en un `data.frame` a partir de las posiciones y longitudes definidas en los metadatos.
 
 ```{r split-data}
-splitted_raw_data <- list()
-
-for (var_idx in 1:nrow(vars_table)) {
-  
-  # Dividimos cada entrada según las posiciones y longitudes del excel
-  aux <- substr(
-    filtered_raw_data,
-    vars_table$Posición[var_idx],
-    vars_table$Posición[var_idx] + vars_table$Longitud[var_idx] - 1)
-  
-  splitted_raw_data[[vars_table$Variable[var_idx]]] <- aux
-}
-
-raw_data_df <- data.frame(splitted_raw_data)
+raw_data_df <- split_raw_data(filtered_raw_data, vars_table)
 ```
 
 ## Obtención de los diccionarios
@@ -283,3 +270,12 @@ var_provincias <- altas - bajas
 print(var_provincias)
 ```
 El dato más significativo que se observa es que España es un país con un mayor número de inmigrantes que de emigrantes y por consecuencia, la población en las diferentes provincias españolas aumenta. Además, otro dato curioso es que no se observa un decrecimiento en las provincias del interior de España "La España despoblada". A continuación, estudiaremos el flujo migratorio según el tamaño de los municipios para valorar el éxodo rural.
+
+```{r plot-prov}
+dict_prov <- get_prov_location(fileDir = "./data/prov_locations.RData")
+
+selected_prov <- "Palencia"
+prov_data <- get_net_movements(data_df, selected_prov)
+residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, selected_prov)
+residence_variations_map
+```

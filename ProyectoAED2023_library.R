@@ -7,6 +7,58 @@
 #
 # Authors: Hinarejos, J.; Ortega, S.
 
+if (!require(pacman)) {
+  install.packages("pacman")
+  library(pacman)
+}
+pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr)
+
+split_raw_data <- function(filtered_raw_data, vars_table) {
+  
+  splitted_raw_data <- list()
+  for (var_idx in 1:nrow(vars_table)) {
+    
+    # Dividimos cada entrada según las posiciones y longitudes del excel
+    aux <- substr(
+      filtered_raw_data,
+      vars_table$Posición[var_idx],
+      vars_table$Posición[var_idx] + vars_table$Longitud[var_idx] - 1)
+    
+    splitted_raw_data[[vars_table$Variable[var_idx]]] <- aux
+  }
+  
+  raw_data_df <- data.frame(splitted_raw_data)
+  
+  # Añadimos a los códigos de municipios los códigos de provincia para que sean únicos
+  raw_data_df <- make_unique_codes(raw_data_df)
+  
+  return(raw_data_df)
+}
+
+make_unique_codes <- function(raw_data_df) {
+  
+  muni_vars <- grep("^MUNI", names(raw_data_df), value = TRUE)
+  if (length(muni_vars) > 1) {
+    
+    for (muni_var in muni_vars) {
+      
+      prov_var <- grep(
+        paste0("PROV", str_extract(muni_var, "(ALTA|NAC|BAJA)")),
+        names(raw_data_df),
+        value = TRUE)
+      
+      not_na_or_blank <- complete.cases(raw_data_df[c(muni_var, prov_var)]) &
+        ! ( grepl("^[ \t]*$", raw_data_df[[muni_var]]) |
+              grepl("^[ \t]*$", raw_data_df[[prov_var]]) )
+      
+      raw_data_df[not_na_or_blank, muni_var] <- paste0(
+        raw_data_df[not_na_or_blank, prov_var],
+        raw_data_df[not_na_or_blank, muni_var])
+    }
+  }
+  return(raw_data_df)
+}
+
 load_excel_dicts <- function(excel_dict_file, main_sheet = "Diseño") {
   
   sheet_names <- excel_sheets(excel_dict_file)
@@ -87,6 +139,9 @@ get_dict_from_sheets <- function(dict_list, sheet_list, aditional_data) {
           dict_start[2] : (dict_start[2] + 1)]
         
         if (dict_list[[dict_name]]$is_obs) {
+          
+          # Añadimos el código de provincia de extranjero
+          dict_df[, 1] <- paste0("66", dict_df[[1]]) ########################
           aditional_data <- prepare_aditional_data(aditional_data, names(dict_df))
           dict_df <- rbind(dict_df, aditional_data)
         }
@@ -105,7 +160,9 @@ prepare_aditional_data <- function(aditional_data, col_names) {
   
   if (any(colnames(aditional_data) != col_names)) {
     
-    aditional_data <- aditional_data[c("CMUN", "NOMBRE")]
+    aditional_data <- aditional_data[c("CPRO", "CMUN", "NOMBRE")]
+    aditional_data <- aditional_data %>%
+      unite(CMUN_complete, CPRO, CMUN, sep = "") ###########
     colnames(aditional_data) <- col_names
   }
   return(aditional_data)

@@ -249,4 +249,37 @@ A continuación, vamos a cambiar el tipo de las variables para tenerlas en el fo
 ```{r convert-num}
 data_df <- convert_numeric_vars(data_df, vars_table)
 ```
+Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 
+```{r}
+library(ggplot2)
+histograma <- ggplot(data_df, aes(x=EDAD, fill=SEXO)) +
+  geom_histogram(binwidth=5, position="dodge") +
+  labs(
+    title="Histograma de Edades por Sexo",
+    x="Edad",
+    y="Frecuencia"
+  ) +
+  scale_fill_manual(values=c("Hombre"="blue", "Mujer"="pink"))
+print(histograma)
+```
+
+Tras observar esta gráfica, se observa que la gente cambia más de residencia alrededor de los 30 años, lo cual tiene sentido, ya que es la etapa de la vida en la que muchas personas deciden independizarse o formar una nueva familia.
+
+Si queremos estudiar ambas colas, un detalle importante a tener en cuenta y que está apoyado científicamente es que las mujeres viven más de media que los hombres y lo podemos observar a edades tardías, ya que hay una diferencia significativa entre hombres y mujeres a esa edad. Por otra parte, también se observa que tras el nacimiento de los hijos o en muchas ocasiones del segundo hijo de la pareja, las familias suelen tomar la decisión de mudarse a un hogar más amplio.
+
+
+Tras analizar según las edades y el sexo, planteamos otra cuestión de vital importancia como es el hecho de estudiar el éxodo rural.
+
+```{r}
+bajas <- table(data_df$PROVBAJA)
+altas <- table(data_df$PROVALTA)
+
+#Comprobamos si el número de altas es el mismo número que de bajas para poder realizar la comparación correctamente
+sum(bajas)==sum(altas)
+
+var_provincias <- altas - bajas
+
+print(var_provincias)
+```
+El dato más significativo que se observa es que España es un país con un mayor número de inmigrantes que de emigrantes y por consecuencia, la población en las diferentes provincias españolas aumenta. Además, otro dato curioso es que no se observa un decrecimiento en las provincias del interior de España "La España despoblada". A continuación, estudiaremos el flujo migratorio según el tamaño de los municipios para valorar el éxodo rural.

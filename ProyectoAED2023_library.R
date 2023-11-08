@@ -293,10 +293,11 @@ get_prov_location <- function(fileDir, googleKey = NULL, useKey = FALSE) {
   return(dict_prov)
 }
 
-get_net_movements <- function(data_df, selected_prov) {
+get_net_prov_movements <- function(data_df, selected_prov) {
   
   prov_data <- data_df %>%
     select(PROVBAJA, PROVALTA) %>%
+    filter(PROVBAJA != "Extranjero" & PROVALTA != "Extranjero") %>%
     filter(xor(PROVBAJA == selected_prov, PROVALTA == selected_prov)) %>%
     group_by(value = factor(
       x = ifelse(PROVBAJA == selected_prov, PROVALTA, PROVBAJA),
@@ -358,21 +359,23 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
   
   line_data <- st_as_sf(line_data, wkt = "geom")
   
+  color_domain <- abs(prov_data$net_count)
+  color_palette <- rainbow_hcl(n = length(color_domain), c = 100)
   color_scale <- colorNumeric(
-    palette = "RdYlBu",
-    domain = abs(prov_data$net_count))
+    palette = color_palette,
+    domain = color_domain)
   
   residence_variations_map <- leaflet(
     data = target_provs) %>%
     addTiles(urlTemplate = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
     addCircleMarkers(
-      radius = 5,
+      radius = 3,
       color = "blue",
       label = ~value,
       group = "Provincias") %>%
     addCircleMarkers(
       data = selected_prov_coords,
-      radius = 4,
+      radius = 3,
       color = "red",
       popup = ~value,
       group = "Provincia seleccionada")
@@ -382,26 +385,29 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
     residence_variations_map <- residence_variations_map %>%
       addArrowhead(
         data = line_data[i, ],
-        color = color_scale(abs(prov_data$net_count[i])),
+        weight = 5,
+        opacity = 0.6,
+        color = color_scale(color_domain[i]),
         label = ~description,
         popup = ~value,
-        weight = 2,
-        opacity = 1,
         options = arrowheadOptions(
           yawn = 45,
           size = "10000m"
         ),
         group = "Variaciones residenciales")
   }
+  
   residence_variations_map <- residence_variations_map %>%
     addLegend(
-      values = abs(prov_data$net_count),
+      values = color_domain,
       pal = color_scale,
       title = "Número de desplazados",
       position = "bottomright",
       group = "Variaciones residenciales") %>%
     addLayersControl(
-      overlayGroups = c("Provincias", "Provincia seleccionada", "Variaciones residenciales"))
+      overlayGroups = c("Provincias", "Provincia seleccionada", "Variaciones residenciales")) %>%
+    addScaleBar(
+      position = "bottomleft")
   
   return(residence_variations_map)
 }

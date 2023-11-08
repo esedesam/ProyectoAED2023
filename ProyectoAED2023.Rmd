@@ -275,7 +275,7 @@ El dato más significativo que se observa es que España es un país con un mayo
 dict_prov <- get_prov_location(fileDir = "./data/prov_locations.RData")
 
 selected_prov <- "Palencia"
-prov_data <- get_net_movements(data_df, selected_prov)
+prov_data <- get_net_prov_movements(data_df, selected_prov)
 residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, selected_prov)
 residence_variations_map
 ```

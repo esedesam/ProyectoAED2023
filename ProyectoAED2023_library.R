@@ -11,7 +11,7 @@ if (!require(pacman)) {
   install.packages("pacman")
   library(pacman)
 }
-pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras2, sf)
+pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras2, sf, colorspace)
 
 split_raw_data <- function(filtered_raw_data, vars_table) {
   

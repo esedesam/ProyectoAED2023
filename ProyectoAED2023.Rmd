@@ -236,6 +236,29 @@ A continuación, vamos a cambiar el tipo de las variables para tenerlas en el fo
 ```{r convert-num}
 data_df <- convert_numeric_vars(data_df, vars_table)
 ```
+
+
+## Análisis univariante
+
+```{r}
+summary(data_df)
+```
+```{r}
+str(data_df)
+```
+
+```{r}
+# Diagrama de cajas para la EDAD
+library(dplyr)
+
+numer<- data_df %>%
+  select_if(is.numeric)
+
+print(numer)
+
+boxplot(numer$EDAD)
+summary(numer$EDAD)
+```
 Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 
 ```{r}

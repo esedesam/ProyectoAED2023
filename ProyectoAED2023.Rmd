@@ -246,7 +246,22 @@ summary(data_df)
 ```{r}
 str(data_df)
 ```
+### Eliminar variables
+Tras observar las diferentes variables del conjunto de datos, decidimos eliminar aquellas variables que no aportan información valiosa en nuestro conjunto de datos.
 
+```{r}
+elim <- c('MESNAC', 'ANONAC', 'ANOVAR')
+
+data_df <- data_df[, !(names(data_df) %in% elim)]
+```
+
+Decidimos eliminar las variables:
+
+MESNAC: Consideramos que no aporta valor el mes de nacimiento de una persona.
+ANONAC: Es una variable duplicada, ya que aporta la misma información que la edad de las personas.
+ANOVAR: Todos los datos provienen del año 2021.
+
+Otra variable que es posible que no sea de mucho interés es MESVAR, pero de momento decidimos no eliminarla para estudiar si existe alguna época del año en la cual las personas decidan cambiar de residencia con mayor frecuencia.
 ```{r}
 # Diagrama de cajas para la EDAD
 library(dplyr)

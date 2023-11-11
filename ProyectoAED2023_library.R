@@ -256,7 +256,7 @@ get_prov_location <- function(fileDir, googleKey = NULL, useKey = FALSE) {
       dict_prov <- dict_info[dict_info$name == "T_PROV", ]
       if ("name" %in% colnames(dict_prov)) {
         dict_prov <- dict_prov %>%
-          select(-name) %>%
+          dplyr::select(-name) %>%
           mutate(long = NA, lat = NA)
       }
       if (!ggmap::has_google_key()) {
@@ -296,7 +296,7 @@ get_prov_location <- function(fileDir, googleKey = NULL, useKey = FALSE) {
 get_net_prov_movements <- function(data_df, selected_prov) {
   
   prov_data <- data_df %>%
-    select(PROVBAJA, PROVALTA) %>%
+    dplyr::select(PROVBAJA, PROVALTA) %>%
     filter(PROVBAJA != "Extranjero" & PROVALTA != "Extranjero") %>%
     filter(xor(PROVBAJA == selected_prov, PROVALTA == selected_prov)) %>%
     group_by(value = factor(
@@ -328,7 +328,7 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
     target_prov <- prov_data$value[i]
     target_coords <- target_provs %>%
       filter(value == target_prov) %>%
-      select(long, lat)
+      dplyr::select(long, lat)
     
     this_prov$value <- as.character( abs(prov_data$net_count[i]) )
     

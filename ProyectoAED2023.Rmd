@@ -133,7 +133,9 @@ if (!require(pacman)) {
   install.packages("pacman")
   library(pacman)
 }
-pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras2, sf, colorspace)
+pacman::p_load(kableExtra, readxl, stringr, tidyr,
+               dplyr, ggmap, leaflet, leaflet.extras2,
+               sf, colorspace, ggmosaic, fitdistrplus)
 ```
 
 # Datos seleccionados
@@ -263,8 +265,6 @@ ANOVAR: Todos los datos provienen del año 2021.
 
 Otra variable que es posible que no sea de mucho interés es MESVAR, pero de momento decidimos no eliminarla para estudiar si existe alguna época del año en la cual las personas decidan cambiar de residencia con mayor frecuencia.
 ```{r}
-# Análisis variables numericas
-library(dplyr)
 
 numer<- data_df %>%
   select_if(is.numeric)
@@ -273,8 +273,6 @@ print(numer)
 
 boxplot(numer$EDAD)
 table(numer$MESVAR)
-
-library(fitdistrplus)
 
 descdist(numer$EDAD)
 descdist(numer$MESVAR)
@@ -290,7 +288,6 @@ data_df <- data_df[, !(names(data_df) %in% elim)]
 Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 
 ```{r}
-library(ggplot2)
 histograma <- ggplot(data_df, aes(x=EDAD, fill=SEXO)) +
   geom_histogram(binwidth=5, position="dodge") +
   labs(
@@ -322,6 +319,41 @@ print(var_provincias)
 ```
 El dato más significativo que se observa es que España es un país con un mayor número de inmigrantes que de emigrantes y por consecuencia, la población en las diferentes provincias españolas aumenta. Además, otro dato curioso es que no se observa un decrecimiento en las provincias del interior de España "La España despoblada". A continuación, estudiaremos el flujo migratorio según el tamaño de los municipios para valorar el éxodo rural.
 
+Para ello, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera:
+
+| Código en el mosaico | Descripción |
+| -:- | -:- |
+| tam_1 | Municipio no capital hasta 10.000 habitantes |
+| tam_2 | Municipio no capital de 10.001 a 20.000 |
+| tam_3 | Municipio no capital de 20.001 a 50.000 |
+| tam_4 | Municipio no capital de 50.001 a 100.000 |
+| ntam_5 | Municipio no capital  de más de 100.000 |
+| capital | Municipio capital de provincia |
+
+```{r mosaic-tamu}
+mosaic_df <- data_df[
+  complete.cases(data_df[c("SEXO", "TAMUALTA", "TAMUBAJA")]),]
+
+levels(mosaic_df$TAMUBAJA) <- c(paste0("tam_", 1:5), "capital")
+levels(mosaic_df$TAMUALTA) <- c(paste0("tam_", 1:5), "capital")
+
+ggplot(mosaic_df) +
+  geom_mosaic(aes(
+    x = product(TAMUALTA, TAMUBAJA),
+    fill = TAMUALTA)) +
+  geom_mosaic_text(
+    aes(
+      x = product(TAMUALTA, TAMUBAJA),
+      label = after_stat(.wt)),
+    as.label = TRUE) +
+  labs(
+    title = "Mosaic Plot of TAMUALTA and TAMUBAJA",
+    x = "TAMUBAJA",
+    y = "TAMUALTA") +
+  theme_minimal() +
+  guides(fill = "none")
+```
+
 ```{r plot-prov}
 dict_prov <- get_prov_location(fileDir = "./data/prov_locations.RData")
 
@@ -330,3 +362,6 @@ prov_data <- get_net_prov_movements(data_df, selected_prov)
 residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, selected_prov)
 residence_variations_map
 ```
+
+
+

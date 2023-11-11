@@ -291,6 +291,14 @@ A pesar de ser una distribución gamma, mediante la función qqPlot vemos si se 
 library(car)
 qqPlot(data_df$EDAD, distribution = "norm")
 ```
+
+## Análisis univariante( Variables Categóricas)
+
+```{r}
+table(data_df$PROVALTA)
+```
+
+Si analizamos todas las provincias o municipios, tenemos muchos niveles dentro del factor, así que vamos a intentar obtener información más relevante a través del estudio de las comunidades autónomas.
 Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 
 ```{r}

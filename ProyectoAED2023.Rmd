@@ -133,9 +133,7 @@ if (!require(pacman)) {
   install.packages("pacman")
   library(pacman)
 }
-pacman::p_load(kableExtra, readxl, stringr, tidyr,
-               dplyr, ggmap, leaflet, leaflet.extras2,
-               sf, colorspace, ggmosaic, fitdistrplus)
+pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras2, sf, colorspace, car, fitdistrplus, ggmosaic)
 ```
 
 # Datos seleccionados
@@ -265,6 +263,7 @@ ANOVAR: Todos los datos provienen del año 2021.
 
 Otra variable que es posible que no sea de mucho interés es MESVAR, pero de momento decidimos no eliminarla para estudiar si existe alguna época del año en la cual las personas decidan cambiar de residencia con mayor frecuencia.
 ```{r}
+# Análisis variables numericas
 
 numer<- data_df %>%
   select_if(is.numeric)
@@ -284,6 +283,13 @@ Mediante los gráficos de Cullen y Frey observamos que la variable MESVAR la pod
 elim <- c('MESVAR')
 
 data_df <- data_df[, !(names(data_df) %in% elim)]
+```
+
+A pesar de ser una distribución gamma, mediante la función qqPlot vemos si se puede aproximar también mediante una distribución normal.
+
+```{r}
+library(car)
+qqPlot(data_df$EDAD, distribution = "norm")
 ```
 Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 

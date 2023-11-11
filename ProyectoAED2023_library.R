@@ -162,7 +162,7 @@ prepare_aditional_data <- function(aditional_data, col_names) {
     
     aditional_data <- aditional_data[c("CPRO", "CMUN", "NOMBRE")]
     aditional_data <- aditional_data %>%
-      unite(CMUN_complete, CPRO, CMUN, sep = "") ###########
+      unite(CMUN_complete, CPRO, CMUN, sep = "")
     colnames(aditional_data) <- col_names
   }
   return(aditional_data)

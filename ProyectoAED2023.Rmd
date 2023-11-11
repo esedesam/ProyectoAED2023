@@ -262,6 +262,31 @@ ANONAC: Es una variable duplicada, ya que aporta la misma información que la ed
 ANOVAR: Todos los datos provienen del año 2021.
 
 Otra variable que es posible que no sea de mucho interés es MESVAR, pero de momento decidimos no eliminarla para estudiar si existe alguna época del año en la cual las personas decidan cambiar de residencia con mayor frecuencia.
+
+Por otra parte, creamos nuevas variables que contienen las comunidades autónomas, para poder analizar también las variaciones residenciales entre ellas. Para ello, aprovechamos el diccionario de municipios, ya que en él también aparecen codificadas las comunidades autónomas. Dado que las variables de municipios presentan muchos NAs, intentamos rellenar las comunidades autónomas buscando coincidencias de la provincia.
+
+En las nuevas variables de comunidades autónomas, las localizaciones en el extranjero están codificadas como "Extranjero".
+
+```{r add-comu}
+var_sufixes <- c("BAJA", "ALTA", "NAC")
+comu_dict <- municipios_data[c("CODAUTO", "CPRO", "CMUN")]
+comu_dict <- comu_dict %>%
+      unite(CMUN_complete, CPRO, CMUN, sep = "")
+
+for (sufix in var_sufixes) {
+  
+  data_df[paste0("COMU", sufix)] <- as.character(factor(
+    x = raw_data_df[[paste0("MUNI", sufix)]],
+    levels = comu_dict$CMUN_complete,
+    labels = comu_dict$CODAUTO))
+  
+  data_df[
+    data_df[[paste0("PROV", sufix)]] == "Extranjero",
+    paste0("COMU", sufix)] <- "Extranjero"
+}
+```
+
+
 ```{r}
 # Análisis variables numericas
 
@@ -360,7 +385,7 @@ ggplot(mosaic_df) +
   guides(fill = "none")
 ```
 
-```{r plot-prov}
+```{r plot-prov, eval = F}
 dict_prov <- get_prov_location(fileDir = "./data/prov_locations.RData")
 
 selected_prov <- "Palencia"
@@ -368,6 +393,5 @@ prov_data <- get_net_prov_movements(data_df, selected_prov)
 residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, selected_prov)
 residence_variations_map
 ```
-
 
 

@@ -263,7 +263,7 @@ ANOVAR: Todos los datos provienen del año 2021.
 
 Otra variable que es posible que no sea de mucho interés es MESVAR, pero de momento decidimos no eliminarla para estudiar si existe alguna época del año en la cual las personas decidan cambiar de residencia con mayor frecuencia.
 ```{r}
-# Diagrama de cajas para la EDAD
+# Análisis variables numericas
 library(dplyr)
 
 numer<- data_df %>%
@@ -272,7 +272,20 @@ numer<- data_df %>%
 print(numer)
 
 boxplot(numer$EDAD)
-summary(numer$EDAD)
+table(numer$MESVAR)
+
+library(fitdistrplus)
+
+descdist(numer$EDAD)
+descdist(numer$MESVAR)
+```
+
+Mediante los gráficos de Cullen y Frey observamos que la variable MESVAR la podemos aproximar mediante una función uniforme. Por tanto, podemos eliminarla también ya que no aporta valor a nuestro conjunto de datos. Si tuviésemos datos de más años podríamos calcular la serie temporal y observar si hay alguna relación entre mudarse y el mes de cambio de residencia. Por otra parte, la variable Edad nos indica que se puede ajustar bajo una distribución gamma, lo cual tiene sentido, ya que la mediana es 35.7 y sin embargo, alcanza valores de hasta 111 años. Esto es debido a que la mayor parte de la gente se muda alrededor de la treintena y una vez ya han conseguido un trabajo y una familia estable, la decisión de cambiar de residencia es cada vez más complicada.
+
+```{r}
+elim <- c('MESVAR')
+
+data_df <- data_df[, !(names(data_df) %in% elim)]
 ```
 Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 

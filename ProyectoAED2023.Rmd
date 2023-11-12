@@ -263,27 +263,12 @@ ANOVAR: Todos los datos provienen del año 2021.
 
 Otra variable que es posible que no sea de mucho interés es MESVAR, pero de momento decidimos no eliminarla para estudiar si existe alguna época del año en la cual las personas decidan cambiar de residencia con mayor frecuencia.
 
-Por otra parte, creamos nuevas variables que contienen las comunidades autónomas, para poder analizar también las variaciones residenciales entre ellas. Para ello, aprovechamos el diccionario de municipios, ya que en él también aparecen codificadas las comunidades autónomas. Dado que las variables de municipios presentan muchos NAs, intentamos rellenar las comunidades autónomas buscando coincidencias de la provincia.
+Por otra parte, creamos nuevas variables que contienen las comunidades autónomas, para poder analizar también las variaciones residenciales entre ellas. Para ello, aprovechamos el diccionario de municipios, ya que en él también aparecen codificadas las comunidades autónomas. Dado que las variables de municipios presentan muchos NAs, intentamos imputar las comunidades autónomas faltantes buscando coincidencias de la provincia.
 
 En las nuevas variables de comunidades autónomas, las localizaciones en el extranjero están codificadas como "Extranjero".
 
 ```{r add-comu}
-var_sufixes <- c("BAJA", "ALTA", "NAC")
-comu_dict <- municipios_data[c("CODAUTO", "CPRO", "CMUN")]
-comu_dict <- comu_dict %>%
-      unite(CMUN_complete, CPRO, CMUN, sep = "")
-
-for (sufix in var_sufixes) {
-  
-  data_df[paste0("COMU", sufix)] <- as.character(factor(
-    x = raw_data_df[[paste0("MUNI", sufix)]],
-    levels = comu_dict$CMUN_complete,
-    labels = comu_dict$CODAUTO))
-  
-  data_df[
-    data_df[[paste0("PROV", sufix)]] == "Extranjero",
-    paste0("COMU", sufix)] <- "Extranjero"
-}
+data_df <- add_comu_variables(data_df, municipios_data, raw_data_df)
 ```
 
 
@@ -313,7 +298,6 @@ data_df <- data_df[, !(names(data_df) %in% elim)]
 A pesar de ser una distribución gamma, mediante la función qqPlot vemos si se puede aproximar también mediante una distribución normal.
 
 ```{r}
-library(car)
 qqPlot(data_df$EDAD, distribution = "norm")
 ```
 
@@ -386,7 +370,7 @@ ggplot(mosaic_df) +
       label = after_stat(.wt)),
     as.label = TRUE) +
   labs(
-    title = "Mosaic Plot of TAMUALTA and TAMUBAJA",
+    title = "Número de variaciones residenciales en función de TAMUALTA y TAMUBAJA",
     x = "TAMUBAJA",
     y = "TAMUALTA") +
   theme_minimal() +
@@ -394,10 +378,16 @@ ggplot(mosaic_df) +
 ```
 
 ```{r plot-prov, eval = F}
-dict_prov <- get_prov_location(fileDir = "./data/prov_locations.RData")
+country_data <- get_net_country_movements(data_df)
+dict_countries <- get_country_location(fileDir = "./data/country_locations.RData")
+countries_map <- plot_countries_map(country_data, dict_countries)
+countries_map
+```
 
+```{r plot-prov, eval = F}
 selected_prov <- "Palencia"
 prov_data <- get_net_prov_movements(data_df, selected_prov)
+dict_prov <- get_prov_location(fileDir = "./data/prov_locations.RData")
 residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, selected_prov)
 residence_variations_map
 ```

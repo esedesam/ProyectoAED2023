@@ -141,7 +141,7 @@ get_dict_from_sheets <- function(dict_list, sheet_list, aditional_data) {
         if (dict_list[[dict_name]]$is_obs) {
           
           # Añadimos el código de provincia de extranjero
-          dict_df[, 1] <- paste0("66", dict_df[[1]]) ########################
+          dict_df[, 1] <- paste0("66", dict_df[[1]])
           aditional_data <- prepare_aditional_data(aditional_data, names(dict_df))
           dict_df <- rbind(dict_df, aditional_data)
         }
@@ -248,7 +248,60 @@ convert_numeric_vars <- function(data_df, vars_table) {
   return(data_df)
 }
 
-get_prov_location <- function(fileDir, googleKey = NULL, useKey = FALSE) {
+add_comu_variables <- function(data_df, municipios_data, raw_data_df) {
+  
+  # Diccionario para obtener COMU a partir de PROV
+  prov_to_comu <- municipios_data[c("CPRO", "CODAUTO")]
+  prov_to_comu <- prov_to_comu %>%
+    distinct(CODAUTO, CPRO)
+  prov_to_comu <- rbind(
+    prov_to_comu,
+    list("CPRO" = "66", "CODAUTO" = "66"))
+  
+  # Diccionario para interpretar COMU
+  comu_dict <- get_comu_dict()
+  
+  var_sufixes <- c("BAJA", "ALTA", "NAC")
+  
+  for (sufix in var_sufixes) {
+    
+    data_df[paste0("COMU", sufix)] <- factor(
+      x = raw_data_df[[paste0("PROV", sufix)]],
+      levels = prov_to_comu$CPRO,
+      labels = prov_to_comu$CODAUTO)
+    
+    data_df[paste0("COMU", sufix)] <- factor(
+      x = data_df[[paste0("COMU", sufix)]],
+      levels = comu_dict$code,
+      labels = comu_dict$value)
+  }
+  return(data_df)
+}
+
+get_comu_dict <- function(comu_dict_dir = "./data/comu_dict.RData") {
+  
+  if (file.exists(comu_dict_dir)) {
+    
+    load(comu_dict_dir)
+    
+  } else {
+    
+    comu_dict <- data.frame(
+      code = c(paste0("0", 1:9), as.character(10:19), "66"),
+      value = c("Andalucía", "Aragón", "Asturias", "Islas Baleares",
+                "Canarias", "Cantabria", "Castilla y León",
+                "Castilla-La Mancha", "Cataluña", "Comunidad Valenciana",
+                "Extremadura", "Galicia", "Madrid", "Murcia", "Navarra",
+                "País Vasco", "La Rioja", "Ceuta", "Melilla", "Extranjero"))
+    
+    save(
+      comu_dict,
+      file = comu_dict_dir)
+  }
+  return(comu_dict)
+}
+
+get_prov_location <- function(fileDir, dict_prov = NULL, googleKey = NULL, useKey = FALSE) {
   
   generate_prov_locations <- function(dict_prov, fileDir, googleKey, useKey) {
     
@@ -330,7 +383,7 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
       filter(value == target_prov) %>%
       dplyr::select(long, lat)
     
-    this_prov$value <- as.character( abs(prov_data$net_count[i]) )
+    this_prov$value <- as.character(prov_data$net_count[i])
     
     if (prov_data$net_count[i] > 0) {
       
@@ -406,6 +459,188 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
       group = "Variaciones residenciales") %>%
     addLayersControl(
       overlayGroups = c("Provincias", "Provincia seleccionada", "Variaciones residenciales")) %>%
+    addScaleBar(
+      position = "bottomleft")
+  
+  return(residence_variations_map)
+}
+
+get_country_location <- function(fileDir, country_data = NULL, googleKey = NULL, useKey = FALSE) {
+  
+  generate_country_location <- function(country_data, fileDir, googleKey, useKey) {
+    
+    if (useKey) {
+      countries <- unique(country_data$value)
+      
+      if (!"Spain" %in% countries) {
+        countries <- c(countries, "Spain")
+      }
+      dict_countries <- data.frame(
+        value = countries,
+        long = NA,
+        lat = NA)
+      
+      if (!ggmap::has_google_key()) {
+        ggmap::register_google(key = googleKey)
+      }
+      for (country in countries) {
+        location <-geocode(country)
+        if(country %in% c("Mauricio", "Santa Lucía")) {
+          country <- paste(country, "Island")
+        }
+        dict_countries$long[dict_countries$value == country] <- location[["lon"]]
+        dict_countries$lat[dict_countries$value == country]  <- location[["lat"]]
+      }
+      save(
+        dict_countries,
+        file = fileDir)
+    } else {
+      stop("Para generar la tabla de localizaciones de provincias, añada el argumento googleKey y useKey = TRUE.")
+    }
+    return(dict_countries)
+  }
+  
+  if (file.exists(fileDir)) {
+    
+    load(fileDir) # -> dict_countries
+    
+  } else {
+    
+    dict_countries <- generate_country_location(country_data, fileDir, googleKey, useKey)
+  }
+  return(dict_countries)
+}
+
+get_net_country_movements <- function(data_df) {
+  
+  country_data <- data_df %>%
+    dplyr::select(MUNIBAJA, PROVBAJA, MUNIALTA, PROVALTA) %>%
+    # Limipieza de entradas no útiles
+    filter(
+      !MUNIBAJA %in% c("No Consta", "Baja por Caducidad") &
+      !MUNIALTA %in% c("No Consta", "Baja por Caducidad")) %>%
+    # Conversión de factor a character por simplicidad
+    mutate(
+      MUNIBAJA = as.character(MUNIBAJA),
+      MUNIALTA = as.character(MUNIALTA)) %>%
+    # Extracción de país
+    mutate(
+      PAISBAJA = ifelse(
+        PROVBAJA == "Extranjero",
+        MUNIBAJA,
+        "Spain"),
+      PAISALTA = ifelse(
+        PROVALTA == "Extranjero",
+        MUNIALTA,
+        "Spain")) %>%
+    filter(xor(PAISBAJA == "Spain", PAISALTA == "Spain")) %>%
+    group_by(value = ifelse(
+      PAISBAJA == "Spain",
+      PAISALTA,
+      PAISBAJA)) %>%
+    summarise(net_count = sum(ifelse(PAISBAJA == "Spain", -1, 1)))
+  
+  return(country_data)
+}
+
+plot_countries_map <- function(country_data, dict_countries) {
+  
+  spain_coords <- dict_countries %>%
+    filter(value == "Spain")
+  
+  target_countries <- dict_countries %>%
+    filter(value != "Spain") %>%
+    filter(value %in% country_data$value)
+  
+  col_names <- c("value", "geom", "description")
+  line_data <- data.frame(matrix(nrow = 0, ncol = length(col_names)))
+  colnames(line_data) <- col_names
+  
+  for (i in 1:nrow(country_data)) {
+    
+    this_country <- list()
+    
+    target_country <- country_data$value[i]
+    target_coords <- target_countries %>%
+      filter(value == target_country) %>%
+      dplyr::select(long, lat)
+    
+    this_country$value <- as.character(country_data$net_count[i])
+    
+    if (country_data$net_count[i] < 0) {
+      
+      this_country$geom <- paste0(
+        "LINESTRING(", spain_coords$long, " ",
+        spain_coords$lat, ",",
+        target_coords$long, " ",
+        target_coords$lat, ")")
+      
+      this_country$description <- paste0(
+        "Spain-", target_country)
+      
+    } else {
+      
+      this_country$geom <- paste0(
+        "LINESTRING(", target_coords$long, " ",
+        target_coords$lat, ",",
+        spain_coords$long, " ",
+        spain_coords$lat, ")")
+      
+      this_country$description <- paste0(
+        target_country, "-Spain")
+    }
+    line_data <- rbind(line_data, this_country)
+  }
+  
+  line_data <- st_as_sf(line_data, wkt = "geom")
+  
+  color_domain <- abs(country_data$net_count)
+  color_palette <- rainbow_hcl(n = length(color_domain), c = 100)
+  color_scale <- colorNumeric(
+    palette = color_palette,
+    domain = color_domain)
+  
+  residence_variations_map <- leaflet(
+    data = target_countries) %>%
+    addTiles(urlTemplate = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
+    addCircleMarkers(
+      radius = 3,
+      color = "blue",
+      label = ~value,
+      group = "Países") %>%
+    addCircleMarkers(
+      data = spain_coords,
+      radius = 3,
+      color = "red",
+      popup = ~value,
+      group = "España")
+  
+  for (i in 1 : nrow(line_data)) {
+    
+    residence_variations_map <- residence_variations_map %>%
+      addArrowhead(
+        data = line_data[i, ],
+        weight = 5,
+        opacity = 0.6,
+        color = color_scale(color_domain[i]),
+        label = ~description,
+        popup = ~value,
+        options = arrowheadOptions(
+          yawn = 45,
+          size = "10000m"
+        ),
+        group = "Variaciones residenciales")
+  }
+  
+  residence_variations_map <- residence_variations_map %>%
+    addLegend(
+      values = color_domain,
+      pal = color_scale,
+      title = "Número de desplazados",
+      position = "bottomright",
+      group = "Variaciones residenciales") %>%
+    addLayersControl(
+      overlayGroups = c("Países", "España", "Variaciones residenciales")) %>%
     addScaleBar(
       position = "bottomleft")
   

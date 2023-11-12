@@ -11,7 +11,7 @@ if (!require(pacman)) {
   install.packages("pacman")
   library(pacman)
 }
-pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras2, sf, colorspace)
+pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras, leaflet.extras2, sf, colorspace)
 
 split_raw_data <- function(filtered_raw_data, vars_table) {
   
@@ -385,7 +385,7 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
     
     this_prov$value <- as.character(prov_data$net_count[i])
     
-    if (prov_data$net_count[i] > 0) {
+    if (prov_data$net_count[i] < 0) {
       
       this_prov$geom <- paste0(
         "LINESTRING(", selected_prov_coords$long, " ",
@@ -485,7 +485,7 @@ get_country_location <- function(fileDir, country_data = NULL, googleKey = NULL,
       }
       for (country in countries) {
         location <-geocode(country)
-        if(country %in% c("Mauricio", "Santa Lucía")) {
+        if(country %in% c("Mauricio", "Santa Lucía", "Granada")) {
           country <- paste(country, "Island")
         }
         dict_countries$long[dict_countries$value == country] <- location[["lon"]]
@@ -545,104 +545,24 @@ get_net_country_movements <- function(data_df) {
 
 plot_countries_map <- function(country_data, dict_countries) {
   
-  spain_coords <- dict_countries %>%
-    filter(value == "Spain")
+  merged_data <- merge(country_data, dict_countries, by = "value")
+  merged_data$color <- ifelse(merged_data$net_count >= 0, "green", "red")
   
-  target_countries <- dict_countries %>%
-    filter(value != "Spain") %>%
-    filter(value %in% country_data$value)
-  
-  col_names <- c("value", "geom", "description")
-  line_data <- data.frame(matrix(nrow = 0, ncol = length(col_names)))
-  colnames(line_data) <- col_names
-  
-  for (i in 1:nrow(country_data)) {
-    
-    this_country <- list()
-    
-    target_country <- country_data$value[i]
-    target_coords <- target_countries %>%
-      filter(value == target_country) %>%
-      dplyr::select(long, lat)
-    
-    this_country$value <- as.character(country_data$net_count[i])
-    
-    if (country_data$net_count[i] < 0) {
-      
-      this_country$geom <- paste0(
-        "LINESTRING(", spain_coords$long, " ",
-        spain_coords$lat, ",",
-        target_coords$long, " ",
-        target_coords$lat, ")")
-      
-      this_country$description <- paste0(
-        "Spain-", target_country)
-      
-    } else {
-      
-      this_country$geom <- paste0(
-        "LINESTRING(", target_coords$long, " ",
-        target_coords$lat, ",",
-        spain_coords$long, " ",
-        spain_coords$lat, ")")
-      
-      this_country$description <- paste0(
-        target_country, "-Spain")
-    }
-    line_data <- rbind(line_data, this_country)
-  }
-  
-  line_data <- st_as_sf(line_data, wkt = "geom")
-  
-  color_domain <- abs(country_data$net_count)
-  color_palette <- rainbow_hcl(n = length(color_domain), c = 100)
-  color_scale <- colorNumeric(
-    palette = color_palette,
-    domain = color_domain)
-  
-  residence_variations_map <- leaflet(
-    data = target_countries) %>%
+  residence_variations_map <- leaflet(merged_data) %>%
     addTiles(urlTemplate = 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png') %>%
     addCircleMarkers(
-      radius = 3,
-      color = "blue",
-      label = ~value,
+      color = ~color,
+      radius = ~log10(abs(net_count)),
+      popup = ~paste("País: ", value, "<br>Variación neta: ", net_count),
       group = "Países") %>%
-    addCircleMarkers(
-      data = spain_coords,
-      radius = 3,
-      color = "red",
-      popup = ~value,
-      group = "España")
-  
-  for (i in 1 : nrow(line_data)) {
-    
-    residence_variations_map <- residence_variations_map %>%
-      addArrowhead(
-        data = line_data[i, ],
-        weight = 5,
-        opacity = 0.6,
-        color = color_scale(color_domain[i]),
-        label = ~description,
-        popup = ~value,
-        options = arrowheadOptions(
-          yawn = 45,
-          size = "10000m"
-        ),
-        group = "Variaciones residenciales")
-  }
-  
-  residence_variations_map <- residence_variations_map %>%
     addLegend(
-      values = color_domain,
-      pal = color_scale,
-      title = "Número de desplazados",
       position = "bottomright",
-      group = "Variaciones residenciales") %>%
+      colors = c("green", "red"),
+      labels = c("Inmigración", "Emigración"),
+      title = "Leyenda de color",
+      group = "Países") %>%
     addLayersControl(
-      overlayGroups = c("Países", "España", "Variaciones residenciales")) %>%
-    addScaleBar(
-      position = "bottomleft")
+      overlayGroups = c("Países"))
   
   return(residence_variations_map)
 }

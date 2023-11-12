@@ -278,7 +278,7 @@ data_df <- add_comu_variables(data_df, municipios_data, raw_data_df)
 numer<- data_df %>%
   select_if(is.numeric)
 
-print(numer)
+head(numer)
 
 boxplot(numer$EDAD)
 table(numer$MESVAR)
@@ -377,7 +377,7 @@ ggplot(mosaic_df) +
   guides(fill = "none")
 ```
 
-```{r plot-prov, eval = F}
+```{r plot-countries, eval = F}
 country_data <- get_net_country_movements(data_df)
 dict_countries <- get_country_location(fileDir = "./data/country_locations.RData")
 countries_map <- plot_countries_map(country_data, dict_countries)

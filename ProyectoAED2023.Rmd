@@ -306,8 +306,47 @@ qqPlot(data_df$EDAD, distribution = "norm")
 ```{r}
 table(data_df$PROVALTA)
 ```
+Tras analizar las edades y el mes de variación, planteamos otra cuestión de vital importancia como es el hecho de estudiar el éxodo rural.
+
+```{r}
+bajas <- table(data_df$PROVBAJA)
+altas <- table(data_df$PROVALTA)
+
+#Comprobamos si el número de altas es el mismo número que de bajas para poder realizar la comparación correctamente
+sum(bajas)==sum(altas)
+
+var_provincias <- altas - bajas
+
+print(var_provincias)
+```
+
+El dato más significativo que se observa es que España es un país con un mayor número de inmigrantes que de emigrantes y por consecuencia, la población en las diferentes provincias españolas aumenta. Además, otro dato curioso es que no se observa un decrecimiento en las provincias del interior de España "La España despoblada". A continuación, estudiaremos el flujo migratorio según el tamaño de los municipios para valorar el éxodo rural.
 
 Si analizamos todas las provincias o municipios, tenemos muchos niveles dentro del factor, así que vamos a intentar obtener información más relevante a través del estudio de las comunidades autónomas.
+
+
+```{r}
+bajas <- table(data_df$COMUBAJA)
+altas <- table(data_df$COMUALTA)
+
+#Comprobamos si el número de altas es el mismo número que de bajas para poder realizar la comparación correctamente
+sum(bajas)==sum(altas)
+
+var_com <- altas - bajas
+
+#Eliminamos Extranjero para únicamente estudiar el terriorio nacional
+
+elim <- c('Extranjero')
+var_com <- var_com[!(names(var_com) %in% elim)]
+
+
+barplot(var_com, names.arg = names(var_com), cex.names = 0.5, las=2, main = "Diferencia entre Altas y Bajas", xlab = "Categorías", ylab = "Diferencia")
+```
+
+## Análisis bivariante
+
+### Gráficos
+
 Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 
 ```{r}
@@ -326,23 +365,22 @@ Tras observar esta gráfica, se observa que la gente cambia más de residencia a
 
 Si queremos estudiar ambas colas, un detalle importante a tener en cuenta y que está apoyado científicamente es que las mujeres viven más de media que los hombres y lo podemos observar a edades tardías, ya que hay una diferencia significativa entre hombres y mujeres a esa edad. Por otra parte, también se observa que tras el nacimiento de los hijos o en muchas ocasiones del segundo hijo de la pareja, las familias suelen tomar la decisión de mudarse a un hogar más amplio.
 
-
-Tras analizar según las edades y el sexo, planteamos otra cuestión de vital importancia como es el hecho de estudiar el éxodo rural.
+Seguidamente, mediante un test T veremos si podemos considerar que las medias para hombres y mujeres son iguales.
 
 ```{r}
-bajas <- table(data_df$PROVBAJA)
-altas <- table(data_df$PROVALTA)
+mujeres <- filter(data_df, SEXO == "Mujer")
+hombres <- filter(data_df, SEXO=='Hombre')
 
-#Comprobamos si el número de altas es el mismo número que de bajas para poder realizar la comparación correctamente
-sum(bajas)==sum(altas)
+t.test(mujeres$EDAD,hombres$EDAD)
 
-var_provincias <- altas - bajas
+ggplot(data_df, aes(x = SEXO, y = EDAD, fill = SEXO)) +
+  geom_boxplot() +
+  labs(title = "Boxplot of EDAD by SEXO", x = "SEXO", y = "EDAD")
 
-print(var_provincias)
 ```
-El dato más significativo que se observa es que España es un país con un mayor número de inmigrantes que de emigrantes y por consecuencia, la población en las diferentes provincias españolas aumenta. Además, otro dato curioso es que no se observa un decrecimiento en las provincias del interior de España "La España despoblada". A continuación, estudiaremos el flujo migratorio según el tamaño de los municipios para valorar el éxodo rural.
+Por tanto, rechazamos la hipótesis nula de que las medias de edad de los hombres y las mujeres es la misma.
 
-Para ello, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera:
+Para seguir con el estudio del éxodo rural, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera:
 
 | Código en el mosaico | Descripción |
 | -:- | -:- |
@@ -392,4 +430,12 @@ residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, s
 residence_variations_map
 ```
 
+### Características
 
+
+```{r}
+tablacontingencia1 <- table(data_df$COMUBAJA, data_df$COMUALTA)
+chitest1 <- chisq.test(tablacontingencia1, correct = FALSE)
+print(chitest1)
+```
+Por tanto, rechazamos la hipótesis nula.

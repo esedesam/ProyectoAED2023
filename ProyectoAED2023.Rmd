@@ -494,6 +494,12 @@ resumen <- outliers %>%
   unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ") %>%
 print(resumen)
 
+valorescriticos<- data_df %>%
+  filter(EDAD > 81.5) %>%
+  count()
+
+print(valorescriticos)
+
 outliers <- data_df %>%
   group_by(SEXO) %>%
   select(EDAD) %>%
@@ -506,5 +512,19 @@ print(outliers)
 resumen <- outliers %>%
   unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ") %>%
 print(resumen)
+
+valorescriticos<- data_df %>%
+  group_by(SEXO) %>%
+  filter(SEXO=='Mujer',EDAD > 85.5) %>%
+  count()
+
+print(valorescriticos)
+
+valorescriticos<- data_df %>%
+  group_by(SEXO) %>%
+  filter(SEXO=='Hombre',EDAD > 81.5) %>%
+  count()
+
+print(valorescriticos)
 ```
 

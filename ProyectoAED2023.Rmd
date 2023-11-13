@@ -375,6 +375,7 @@ print(cor_spearman)
 La correlación de Pearson sirve para cuando la relación entre dos variables es lineal, mientras que la de Spearman es robusta frente a relaciones no lineales en datos ordenados.
 Por esta razón, ambas correlaciones son iguales, ya que la relación entre ambas variables es lineal.
 
+### Nméricas- Categóricas
 
 Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 
@@ -410,6 +411,7 @@ ggplot(data_df, aes(x = SEXO, y = EDAD, fill = SEXO)) +
 ```
 Por tanto, rechazamos la hipótesis nula de que las medias de edad de los hombres y las mujeres es la misma.
 
+### Categóricas - Categóricas
 Para seguir con el estudio del éxodo rural, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera:
 
 | Código en el mosaico | Descripción |
@@ -469,3 +471,40 @@ chitest1 <- chisq.test(tablacontingencia1, correct = FALSE)
 print(chitest1)
 ```
 Por tanto, rechazamos la hipótesis nula.
+
+## Análisis de outliers y datos faltantes
+
+Respecto a los valores NA, hemos decidido no imputar ningún valor faltante, ya que consideramos que nuestra muestra es suficientemente grande como para poder trabajar sin dichos valores y tampoco queremos introducir datos que modifiquen las características de nuestro conjunto de datos.
+
+Respecto a los outliers, únicamente hemos encontrado en la variable EDAD aunque no se pueden considerar valores imposibles, puesto que una persona puede vivir 110 años.
+
+```{r}
+library(dplyr)
+library(tidyr)
+
+outliers <- data_df %>%
+  select(EDAD) %>%
+  summarise(Media=mean(EDAD), Mediana=median(EDAD), IQR=IQR(EDAD), Q1 = quantile(EDAD,0.25),Q3 = quantile(EDAD, 0.75),
+ValorMinBoxplot= quantile(EDAD,0.25)-1.5*IQR(EDAD),           
+ValorMaxBoxplot=quantile(EDAD,0.75)+1.5*IQR(EDAD) )
+
+print(outliers)
+
+resumen <- outliers %>%
+  unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ") %>%
+print(resumen)
+
+outliers <- data_df %>%
+  group_by(SEXO) %>%
+  select(EDAD) %>%
+  summarise(Media=mean(EDAD), Mediana=median(EDAD), IQR=IQR(EDAD), Q1 = quantile(EDAD,0.25),Q3 = quantile(EDAD, 0.75),
+ValorMinBoxplot= quantile(EDAD,0.25)-1.5*IQR(EDAD),           
+ValorMaxBoxplot=quantile(EDAD,0.75)+1.5*IQR(EDAD) )
+
+print(outliers)
+
+resumen <- outliers %>%
+  unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ") %>%
+print(resumen)
+```
+

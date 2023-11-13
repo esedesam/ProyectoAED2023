@@ -562,7 +562,9 @@ plot_countries_map <- function(country_data, dict_countries) {
       title = "Leyenda de color",
       group = "Países") %>%
     addLayersControl(
-      overlayGroups = c("Países"))
+      overlayGroups = c("Países")) %>%
+    addScaleBar(
+      position = "bottomleft")
   
   return(residence_variations_map)
 }

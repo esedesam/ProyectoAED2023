@@ -1,0 +1,96 @@
+---
+title: "Estudio de las variaciones residenciales en España en 2021"
+author: Javier Hinarejos & Samuel Ortega
+date: 13-11-2023
+output:
+  ioslides_presentation:
+    number_sections: true
+    widescreen: true
+    logo: logo.jpg
+    smaller: true
+    df_print: paged
+---
+
+```{css style-opts, echo=FALSE}
+
+.title-slide hgroup h1 {
+  font-size: 50px;
+  letter-spacing: 1px;
+}
+
+.gdbar img {
+  width: 500px !important;
+  height: 100px !important;
+  margin: 8px 8px;
+}
+
+.gdbar {
+  width: 550px !important;
+  height: 120px !important;
+}
+
+slides > slide:not(.nobackground):before {
+  width: 300px;
+  height: 60px;
+  background-size: 300px 60px;
+}
+```
+
+```{r setup, include=FALSE}
+
+base::options(width = 50, digits = 3)
+knitr::opts_chunk$set(echo = F, message = T, error = F, warning = F, comment = NA, dpi = 100, tidy = T, cache.path = '.cache/', fig.path = './figure/', include = T)
+
+if (!require(pacman)) {
+  install.packages("pacman")
+  library(pacman)
+}
+pacman::p_load(imager, readxl, kableExtra)
+```
+
+# Inspección de los datos
+
+## Obtención de los datos {#obt-datos}
+
+<style>
+  #obt-datos > p {      
+    margin-top: -30px;     
+  }
+  </style>
+  
+Base de microdatos del INE:
+
+ - Variaciones residenciales (2021): [https://go.uv.es/saorme/ine-var-res-2021](https://go.uv.es/saorme/ine-var-res-2021).
+ - Diccionario de municipios (2021): [https://go.uv.es/saorme/ine-muni-2021](https://go.uv.es/saorme/ine-muni-2021).
+
+```{r ine-img, fig.height = 4, fig.align="center"}
+myimg <- load.image("./figure/ine.png")
+par(mar = c(0, 0, 1, 0))
+plot(myimg, axes = FALSE)
+```
+
+
+## Previsualización del fichero principal
+
+La información está almacenada en el fichero en filas de longitud fija.
+
+<font size="1">
+```{r preview}
+raw_data_preview <- readLines('./data/md_EVR_2021.txt', n = 3)
+preview_df <- data.frame(linea = 1:length(raw_data_preview), contenido = raw_data_preview)
+preview_df
+```
+<font size="1">
+
+Interpretamos la información con el fichero de metadatos.
+
+<font size="1">
+```{r metadatos}
+excel_dict_file <- "./data/dr_EVR_2021.xlsx"
+metadata <- read_excel(excel_dict_file, sheet = "Diseño",
+                         range = "A2:J19", col_names = TRUE)
+
+metadata
+```
+<font size="1">
+

@@ -346,11 +346,34 @@ A continuación, estudiaremos el flujo migratorio según el tamaño de los munic
 
 ## Análisis bivariante
 
-### Gráficos
+### Numérica - Numérica
+
+Debido a que en el conjunto de datos actual, únicamente poseemos una variable numérica, decidimos recuperar la variable ANONAc, la cual debería tener una gran correlación con la variable EDAD.
+```{r}
+# Si estás utilizando el paquete dplyr y el conjunto de datos se llama "datos"
+library(dplyr)
+bivar <- data %>%
+  select(ANONAC, EDAD)
+
+pairs(bivar)
+```
+Efectivamente, como era de suponer, obtenemos que las dos variables están correlacionadas totalmente, ya que EDAD= 2021 - ANONAC.
 
 ```{r}
+cov <- cov(bivar, use='complete.obs')
 
+print(cov)
+
+cor_pearson <- cor(bivar, method = "pearson", use = "complete.obs")
+
+print(cor_pearson)
+
+cor_spearman <- cor(bivar, method= 'spearman', use='complete.obs')
+
+print(cor_spearman)
 ```
+La correlación de Pearson sirve para cuando la relación entre dos variables es lineal, mientras que la de Spearman es robusta frente a relaciones no lineales en datos ordenados.
+Por esta razón, ambas correlaciones son iguales, ya que la relación entre ambas variables es lineal.
 
 
 Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.

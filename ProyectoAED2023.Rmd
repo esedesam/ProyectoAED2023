@@ -95,7 +95,7 @@ Hemos escogido los datos de variaciones residenciales en 2021 del INE. Estos dat
 
 Adicionalmente, hemos empleado la relación de municipios de 2021, disponible en: [https://go.uv.es/saorme/ine-muni-2021](https://go.uv.es/saorme/ine-muni-2021).
 
-Se trata de una base de microdatos del INE, procedente de las encuestas realizadas a lo largo de ese mismo año.
+Se trata de una base de microdatos del INE, procedente de las encuestas realizadas a lo largo de ese mismo año. El dataset contiene información sobre las bajas y altas de residencia, junto a información adicional sobre el encuestado (edad, sexo) y sobre las ubicaciones (provincia, tamaño).
 
 ## Preguntas planteadas
 
@@ -113,16 +113,18 @@ raw_data_preview <- readLines('./data/md_EVR_2021.txt', n = 3)
 kable(raw_data_preview)
 ```
 
+Observamos que, como se indicaba, cada entrada tiene la misma longitud, y está codificada en caracteres numéricos cuyo significado hemos de interpretar.
+
 # Lectura de funciones
 
-Las funciones definidas para el procesado de este dataset están disponibles en el fichero `ProyectoAED2023_library.R`.
+El código se ha modularizado para facilitar la comprensión del trabajo realizado. Las funciones definidas para el procesado de este dataset están disponibles en el fichero `ProyectoAED2023_library.R`.
 
 ```{r def-functions}
 prev_objects <- ls()
 source("ProyectoAED2023_library.R")
 new_objects <- ls()
 loaded_functions <- new_objects[!(new_objects %in% prev_objects)]
-cat("Funciones cargadas: ", paste0(loaded_functions, collapse = ", "))
+cat("Funciones cargadas:", loaded_functions, sep = "\n")
 ```
 
 # Lectura de los ficheros
@@ -149,9 +151,11 @@ municipios_data <- read_excel(municipios_file, skip = 1,
 
 # Preprocesado
 
-## Limpieza de longitud incorrecta
+El preprocesado del dataset comienza con el fichero previsualizado anteriormente, y pretende transformar la información hasta obtener un formato tabular, en este caso un `data.frame`, que sea fácilmente entendible y lo más *tidy* posible.
 
-Como primera comprobación, nos aseguramos de que todas las entradas de los datos crudos tienen la longitud adecuada. Este valor está definido en la tabla de metadatos.
+## Limpieza de entradas de longitud incorrecta
+
+Como primera comprobación, nos aseguramos de que todas las entradas de los datos crudos tienen la longitud adecuada. Este valor está definido en la tabla de metadatos. En este caso, no hay ninguna entrada
 
 ```{r check-length}
 entry_length <- vars_table$Longitud[vars_table$Variable == "TOTAL"]
@@ -164,7 +168,7 @@ vars_table <- vars_table[vars_table$Variable != "TOTAL", ]
 
 ## Creación del dataframe
 
-Una vez nos hemos asegurado de que todas las entradas tienen la longitud correcta, dividimos cada una de ellas en distintas variables de un `data.frame` a partir de las posiciones y longitudes definidas en los metadatos.
+Una vez nos hemos asegurado de que todas las entradas tienen la longitud correcta, dividimos cada una de ellas en distintas variables de un `data.frame` a partir de las posiciones y longitudes definidas también en los metadatos.
 
 ```{r split-data}
 raw_data_df <- split_raw_data(filtered_raw_data, vars_table)
@@ -212,21 +216,25 @@ data_df <- convert_numeric_vars(data_df, vars_table)
 
 # Análisis de las variables
 
-## Análisis univariante
+## Resumen del dataset
 
-En primer lugar, realizamos un summary para obtener la información esencial de cada variable.
+En primer lugar, realizamos un `summary()` para obtener la información esencial de cada variable.
 
 ```{r summ-data}
 summary(data_df)
 ```
 
-Seguidamente, observamos el tipo de cada variable para confirmar que estén en el formato adecuado.
+Seguidamente, observamos el tipo de cada variable para confirmar que estén en el formato adecuado empleando la función `str()`.
 
 ```{r str-data}
 str(data_df)
 ```
 
-Tras observar las diferentes variables del conjunto de datos, decidimos eliminar aquellas variables que no aportan información valiosa en nuestro conjunto de datos.
+Tras observar las diferentes variables del conjunto de datos, decidimos eliminar aquellas variables que no aportan información valiosa en nuestro conjunto de datos:
+
+ - **MESNAC**: El mes de nacimiento del encuestado no es relevante.
+
+ - **ANOVAR**: Todos los datos provienen del año 2021.
 
 ```{r elim-vars1}
 elim <- c('MESNAC', 'ANOVAR')
@@ -234,21 +242,19 @@ elim <- c('MESNAC', 'ANOVAR')
 data_df <- data_df[, !(names(data_df) %in% elim)]
 ```
 
-Decidimos eliminar las variables:
-
- - **MESNAC**: Consideramos que no aporta valor el mes de nacimiento de una persona.
-
- - **ANOVAR**: Todos los datos provienen del año 2021.
-
-Otra variable que es posible que no sea de mucho interés es **MESVAR**, pero de momento decidimos no eliminarla para estudiar si existe alguna época del año en la cual las personas decidan cambiar de residencia con mayor frecuencia.
-
-Por otra parte, creamos nuevas variables que contienen las comunidades autónomas, para poder analizar también las variaciones residenciales entre ellas. Para ello, aprovechamos el diccionario de municipios, ya que en él también aparecen codificadas las comunidades autónomas. Dado que las variables de municipios presentan muchos NAs, intentamos imputar las comunidades autónomas faltantes buscando coincidencias de la provincia.
+Por otra parte, creamos nuevas variables que contienen las comunidades autónomas, para poder analizar también las variaciones residenciales entre ellas. Para ello, aprovechamos el diccionario de municipios, ya que en él también aparecen codificadas las comunidades autónomas, y nos permite relacionar las provincias con las comunidades. Esta variable es más interesante que las provincias o los municipios, ya que en estás dos el número de categorías es muy elevado.
 
 En las nuevas variables de comunidades autónomas, las localizaciones en el extranjero están codificadas como "Extranjero".
 
 ```{r add-comu}
 data_df <- add_comu_variables(data_df, municipios_data, raw_data_df)
 ```
+
+## Datos faltantes
+
+En los resúmenes mostrados podemos observamos que las variables de municipio y tamaño contienen numerosos valores faltantes. Además, en algunas de las variables categóricas, aparecen niveles cuyo significado es equivalente a un dato faltante de cara al análisis: "No Consta", "Other", "Baja por Caducidad".
+
+## Análisis univariante
 
 ```{r numer}
 # Análisis variables numericas
@@ -258,7 +264,8 @@ numer<- data_df %>%
 plot_file <- "./figure/boxplot_edad.jpg"
 if (!useJPGs | !file.exists(plot_file)) {
   jpeg(plot_file, width = 500, height = 350)
-  boxplot(numer$EDAD)
+  par(mar = c(1,4,1,1))
+  boxplot(numer$EDAD, ylab = "edad")
   dev.off()
 }
 img <- load.image(plot_file)
@@ -270,6 +277,7 @@ plot_file <- "./figure/descdist_edad.jpg"
 if (!useJPGs | !file.exists(plot_file)) {
   jpeg(plot_file, width = 500, height = 350)
   descdist(numer$EDAD)
+  title(main = "Edad", line = 3)
   dev.off()
 }
 img <- load.image(plot_file)
@@ -280,6 +288,7 @@ plot_file <- "./figure/descdist_mesvar.jpg"
 if (!useJPGs | !file.exists(plot_file)) {
   jpeg(plot_file, width = 500, height = 350)
   descdist(numer$MESVAR)
+  title(main = "Mes de variación", line = 3)
   dev.off()
 }
 img <- load.image(plot_file)
@@ -287,7 +296,9 @@ par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
-Mediante los gráficos de Cullen y Frey observamos que la variable MESVAR la podemos aproximar mediante una función uniforme. Por tanto, podemos eliminarla también ya que no aporta valor a nuestro conjunto de datos. Si tuviésemos datos de más años podríamos calcular la serie temporal y observar si hay alguna relación entre mudarse y el mes de cambio de residencia. Por otra parte, la variable Edad nos indica que se puede ajustar bajo una distribución gamma, lo cual tiene sentido, ya que la mediana es 35.7 y sin embargo, alcanza valores de hasta 111 años. Esto es debido a que la mayor parte de la gente se muda alrededor de la treintena y una vez ya han conseguido un trabajo y una familia estable, la decisión de cambiar de residencia es cada vez más complicada.
+Mediante los gráficos de *Cullen* y *Frey* observamos que la variable **MESVAR** la podemos aproximar mediante una función uniforme. Por tanto, podemos eliminarla también ya que no aporta valor a nuestro conjunto de datos. Un posible añadido sería cargar datos de años diferentes y estudiar la serie temporal para observar si hay alguna relación o estacionalidad entre mudarse y el mes de cambio de residencia.
+
+Por otra parte, la variable **EDAD** nos indica que se puede ajustar bajo una distribución gamma. Esto es coherente con la distribución, ya que la mediana es 35.7 y sin embargo, alcanza valores de hasta 111 años, por lo que es considerablemente asimétrica. Además, es posible explicar el valor obtenido para la mediana de edad: gran parte de la población logra la estabilidad ecónomica y/o familiar en la treintena, por lo que es alrededor de esta edad en la cual hay más mudanzas, y por tanto se registran más variaciones residenciales.
 
 ```{r elim-vars2}
 elim <- c('MESVAR')
@@ -295,7 +306,7 @@ elim <- c('MESVAR')
 data_df <- data_df[, !(names(data_df) %in% elim)]
 ```
 
-A pesar de ser una distribución gamma, mediante la función `qqPlot()` vemos si se puede aproximar también mediante una distribución normal y observamos que no sería una representación idónea.
+Podemos realizar un análisis adicional de la variable **EDAD**. A pesar de ser una distribución gamma, estudiamos cuánto se aproxima a una distribución normal mediante la función `qqPlot()`.
 
 ```{r qqplot}
 plot_file <- "./figure/qqplot_edad.jpg"
@@ -305,13 +316,16 @@ if (!useJPGs | !file.exists(plot_file)) {
     data_df$EDAD[!is.na(data_df$EDAD)],
     distribution = "norm",
     id = FALSE,
-    ylab = "Cuantiles de edad")
+    ylab = "Cuantiles de edad",
+    main = "qqPlot de la variable de edad")
   dev.off()
 }
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
+
+Observamos que no sería una representación idónea, ya que la cola inferior se separa considerablemente de los cuantiles normales. Esto justifica el gran número de *outliers* detectados anteriormente en el *boxplot*, ya que esta función supone que la distribución que grafica es normal.
 
 ## Análisis univariante (Variables Categóricas)
 
@@ -322,21 +336,21 @@ bajas <- table(data_df$PROVBAJA)
 altas <- table(data_df$PROVALTA)
 
 #Comprobamos si el número de altas es el mismo número que de bajas para poder realizar la comparación correctamente
-sum(bajas)==sum(altas)
+isEqual <- sum(bajas)==sum(altas)
 
 var_provincias <- altas - bajas
 ```
 
-El dato más significativo que se observa es que España es un país con un mayor número de inmigrantes que de emigrantes y por consecuencia, la población en las diferentes provincias españolas aumenta. Además, otro dato curioso es que no se observa un decrecimiento en las provincias del interior de España "La España despoblada". 
+El dato más significativo que se observa es que España es un país con un mayor número de inmigrantes que de emigrantes y por consecuencia, la población en las diferentes provincias españolas aumenta. Además, otro dato curioso es que no se observa un decrecimiento en las provincias del interior de España "La España despoblada".
 
-Si analizamos todas las provincias o municipios, tenemos muchos niveles dentro del factor, así que vamos a intentar obtener información más relevante a través del estudio de las comunidades autónomas.
+Como hemos comentado anteriormente, si analizamos todas las provincias o municipios tenemos muchos niveles dentro del factor. Por ello, vamos a intentar obtener información más relevante a través del estudio de las comunidades autónomas.
 
 ```{r univ-comus}
 bajas <- table(data_df$COMUBAJA)
 altas <- table(data_df$COMUALTA)
 
 #Comprobamos si el número de altas es el mismo número que de bajas para poder realizar la comparación correctamente
-sum(bajas)==sum(altas)
+isEqual <- sum(bajas)==sum(altas)
 
 var_com <- altas - bajas
 
@@ -349,15 +363,20 @@ var_com <- var_com[!(names(var_com) %in% elim)]
 plot_file <- "./figure/barplot_diffs.jpg"
 if (!useJPGs | !file.exists(plot_file)) {
   jpeg(plot_file, width = 500, height = 350)
+  par(mar=c(7, 5, 3, 0))
   barplot(var_com, names.arg = names(var_com),
-          cex.names = 0.5, las=2, main = "Diferencia entre Altas y Bajas",
-          xlab = "Categorías", ylab = "Diferencia")
+          cex.names = 0.5, las = 2, main = "Diferencia entre Altas y Bajas",
+          xlab = "", ylab = "")
+  mtext(text="Categorías", side = 1, line = 5.5)
+  mtext(text="Diferencia", side = 2, line = 4)
   dev.off()
 }
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
+
+En esta gráfica podemos ver que únicamente las comunidades de Aragón, Ceuta y Melilla presentan variaciones netas negativas, y La Comunidad Valenciana y Andalucía son las comunidades que cuentan con un mayor incremento.
 
 ## Análisis bivariante
 
@@ -555,7 +574,7 @@ Como cabía esperar, el número las variaciones residenciales netas de los munic
 
 ## Análisis interactivo: mapas
 
-Empleamos la librería `leaflet` para crear mapas interactivos sobre los que representamos algunos de los resultados obtenidos en el análisis. En este documento se expone una imagen fija de uno de ellos. Para poder consultar los mapas en su totalidad, ejecute el documento `ProyectoAED2023.Rmd`.
+Empleamos la librería `leaflet` para crear mapas interactivos sobre los que representamos algunos de los resultados obtenidos en el análisis. También hemos usado la librería ggmap \parencite(ggmap) para obtener las longitudes y latitudes de las distintas ubicaciones. En este documento se expone una imagen fija de uno de ellos. Para poder consultar los mapas en su totalidad, ejecute el documento `ProyectoAED2023.Rmd`.
 
 ```{r plot-countries, eval = F}
 country_data <- get_net_country_movements(data_df)

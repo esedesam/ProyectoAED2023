@@ -37,7 +37,6 @@ slides > slide:not(.nobackground):before {
 ```
 
 ```{r setup, include=FALSE}
-
 base::options(width = 50, digits = 3)
 knitr::opts_chunk$set(echo = F, message = T, error = F, warning = F, comment = NA, dpi = 100, tidy = T, cache.path = '.cache/', fig.path = './figure/', include = T)
 
@@ -46,6 +45,7 @@ if (!require(pacman)) {
   library(pacman)
 }
 pacman::p_load(imager, readxl, kableExtra)
+source("ProyectoAED2023_library.R")
 ```
 
 # Inspección de los datos

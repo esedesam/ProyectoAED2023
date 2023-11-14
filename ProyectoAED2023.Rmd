@@ -593,7 +593,7 @@ Por otra parte, observamos que hay una mayor cantidad de municipios no capitales
 
 ## Análisis interactivo: mapas
 
-Empleamos la librería `leaflet` para crear mapas interactivos sobre los que representamos algunos de los resultados obtenidos en el análisis. También hemos usado la librería ggmap \cite(ggmap) para obtener las longitudes y latitudes de las distintas ubicaciones. En este documento se expone una imagen fija de uno de ellos. Para poder consultar los mapas en su totalidad, ejecute las celdas de este apartado en el documento `ProyectoAED2023.Rmd`.
+Empleamos la librería `leaflet` para crear mapas interactivos sobre los que representamos algunos de los resultados obtenidos en el análisis. También hemos usado la librería ggmap  [https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf](https://journal.r-project.org/archive/2013-1/kahle-wickham.pdf)) para obtener las longitudes y latitudes de las distintas ubicaciones. En este documento se expone una imagen fija de uno de ellos. Para poder consultar los mapas en su totalidad, ejecute las celdas de este apartado en el documento `ProyectoAED2023.Rmd`.
 
 ```{r plot-countries, eval = F}
 country_data <- get_net_country_movements(data_df)
@@ -612,8 +612,7 @@ residence_variations_map
 
 ### Características
 
-Se usa el test Chi-cuadrado. Este test supone una hipótesis de
-partida Ho (Son independientes) y dependiendo del resultado del
+Se usa el test Chi-cuadrado. Este test supone una hipótesis de partida $H_0$ (Son independientes) y dependiendo del resultado del
 test, se acepta o no:
 
 p<0.05: Rechazamos hipótesis
@@ -639,9 +638,11 @@ outliers
 
 La regla del identificador de Hampel es la única que no considera que la distribución sea gaussiana. Sin embargo, también etiqueta como outliers valores que realmente son posibles, ya que su límite superior es 87.4. Por otra parte, pese a que la edad no sigue una distribución gaussiana, la regla 3 sigma es muy poco agresiva para la detección de outliers y por tanto, es la que menos valores detecta como anómalos.
 
+También realizamos un estudio de los outliers comparando ambos sexos: la mediana de las distribuciones es la misma, sin embargo, la media es mayor para las mujeres que para los hombres debido a la cola superior de las mujeres, razonada ya anteriormente a partir de su mayor esperanza de vida.
+
 # Conclusiones finales
 
-Podemos afirmar que, durante el año 2021 en España, las variaciones residenciales no presentaron ninguna dependencia significativa con la época del año. Por otra parte, sí observamos que la edad es un factor importante en cuanto al cambio de residencia: hay un máximo absoluto en torno a los 35 años, que es coherente con la edad de independización definitiva de muchas familias. También concluimos que esta relación es independiente del sexo.
+Podemos afirmar que, durante el año 2021 en España, las variaciones residenciales no presentaron ninguna dependencia significativa con la época del año. Por otra parte, sí observamos que la edad es un factor importante en cuanto al cambio de residencia: hay un máximo absoluto en torno a los 35 años, que es coherente con la edad de independización definitiva de muchas familias. También concluimos que esta relación no es independiente del sexo.
 
 La tasa de migración de España con el extranjero durante el año estudiado es positiva y de valor elevado. Sin embargo, este resultado puede estar influido por la amplia cantidad de variaciones de salida codificadas como "Baja por Caducidad".
 

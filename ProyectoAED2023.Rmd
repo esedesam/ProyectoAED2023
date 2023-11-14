@@ -574,21 +574,30 @@ residence_variations_map
 
 ### Características
 
+Se usa el test Chi-cuadrado. Este test supone una hipótesis de
+partida Ho (Son independientes) y dependiendo del resultado del
+test, se acepta o no:
+
+p<0.05: Rechazamos hipótesis
+p \(\geq\) 0.05: Aceptamos Ho
+
 ```{r chisq-comu}
 tablacontingencia1 <- table(data_df$COMUBAJA, data_df$COMUALTA)
 chitest1 <- chisq.test(tablacontingencia1, correct = FALSE)
 print(chitest1)
 ```
 
-Por tanto, rechazamos la hipótesis nula.
+Por tanto, como p \(\geq\) < 0.05, rechazamos la hipótesis nula. y por tanto, concluimos que las variables COMUBAJA y COMUALTA son dependendientes.
 
 ## Análisis de outliers y datos faltantes
 
-Respecto a los valores NA, hemos decidido no imputar ningún valor faltante, ya que consideramos que nuestra muestra es suficientemente grande como para poder trabajar sin dichos valores y es preferible introducir datos que modifiquen las características de nuestro conjunto de datos.
+Respecto a los valores NA, hemos decidido no imputar ningún valor faltante, ya que consideramos que nuestra muestra es suficientemente grande como para poder trabajar sin dichos valores y es preferible no introducir datos que modifiquen las características de nuestro conjunto de datos.
 
 Respecto a los outliers, únicamente hemos encontrado en la variable EDAD aunque no se pueden considerar valores imposibles, puesto que una persona puede vivir 110 años.
 
 ```{r outliers}
+
+## Análisis outliers Boxplot
 outliers <- data_df %>%
   dplyr::select(EDAD) %>%
   summarise(Media=mean(EDAD), Mediana=median(EDAD), IQR=IQR(EDAD), Q1 = quantile(EDAD,0.25),Q3 = quantile(EDAD, 0.75),
@@ -629,5 +638,45 @@ valorescriticos<- data_df %>%
   count()
 valorescriticos
 ```
+
+```{r}
+# Análisis outliers Regla 3 Sigma
+
+library(dplyr)
+outliers_sigma <- data_df %>%
+  dplyr::select(EDAD) %>%
+  summarise(Sigma=mean(EDAD) + 3*sd(EDAD))
+outliers_sigma
+
+valorescriticos_sigma<- data_df %>%
+  filter(EDAD > 93.5) %>%
+  count()
+valorescriticos_sigma
+
+
+outliers <- data_df %>%
+  group_by(SEXO) %>%
+  dplyr::select(EDAD) %>%
+  summarise(Sigma=mean(EDAD) + 3*sd(EDAD) )
+outliers
+
+valorescriticos_sigmah<- data_df %>%
+  group_by(SEXO) %>%
+  filter(SEXO=='Hombre',EDAD > 91.3) %>%
+  count()
+valorescriticos_sigmah
+
+valorescriticos_sigmam<- data_df %>%
+  group_by(SEXO) %>%
+  filter(SEXO=='Mujer',EDAD > 95.8) %>%
+  count()
+valorescriticos_sigmam
+```
+
+```{r}
+# Identificador Hampel
+3*mad(data_df$EDAD)
+```
+La regla del identificador de Hampel es el único que no considera que la distribución sea gaussiana. Sin embargo, etiqueta como outliers valores que realmente no lo son. Por otra parte, pese a que la Edad no sigue una distribución gaussiana, la regla 3 sigma es muy poco agresiva para la detección de outliers y por tanto, es la que menos valores detecta como outliers.
 
 # Conclusiones finales

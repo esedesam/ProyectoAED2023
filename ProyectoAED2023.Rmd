@@ -2,7 +2,7 @@
 title: Proyecto Análisis Exploratorio de Datos 2023
 author:
   - name: Javier Hinarejos Albero
-    affil: 1, \dagger
+    affil: 1, \dagger, *
   - name: Samuel Ortega Mediavilla
     affil: 1, \dagger, *
 affiliation:
@@ -18,7 +18,7 @@ authorcitation: |
 firstnote: |
   Estos autores contribuyeron de manera equitativa a este trabajo.
 correspondence: |
-  saorme@alumni.uv.es.
+  jahial@alumni.uv.es, saorme@alumni.uv.es
 # document options
 journal: notspecified
 type: article
@@ -36,7 +36,7 @@ acknowledgement: |
   Hasta la fecha de publicación, no se ha recibido ningún tipo de financiamiento
   para este proyecto.
 authorcontributions: |
-  S.O. y J.H. hicieron la búsqueda y selección del datasetM S.O. realizó el
+  S.O. y J.H. hicieron la búsqueda y selección del dataset; S.O. realizó el
   preprocesamiento de los datos; J.H. realizó un análisis estadístico profundo de
   los datos procesados; S.O. y J.H. realizaron las representaciones gráficas;
   S.O. y J.H. redactaron el trabajo.
@@ -61,6 +61,12 @@ abbreviations:
     long: Instituto Nacional de Estadística
   - short: AED
     long: Análisis Exploratorio de Datos
+  - short: MCAR
+    long: Missing Completely At Random
+  - short: MAR
+    long: Missing At Random
+  - short: NA
+    long: Not Available
 bibliography: mybibfile.bib
 # appendix: appendix.tex
 endnotes: false
@@ -102,7 +108,7 @@ Se trata de una base de microdatos del INE, procedente de las encuestas realizad
  - ¿Se concentran las variaciones residenciales durante alguna época concreta del año?
  - ¿Hay alguna dependencia de la cantidad de variaciones residenciales con la edad? Si es así, ¿depende también de la edad?
  - ¿Cómo es la tasa de migración de España con el extranjero?
- - ¿Hay una relación significativa entre el tamaño de los municipios y el número de variaciones que se producen en ellos? ¿Es el éxodo rural un problema actual?
+ - ¿Hay una relación significativa entre el tamaño de los municipios y el número de variaciones que se producen en ellos? ¿Es el éxodo rural un problema actual?
 
 # Previsualización de los datos
 
@@ -250,9 +256,15 @@ En las nuevas variables de comunidades autónomas, las localizaciones en el extr
 data_df <- add_comu_variables(data_df, municipios_data, raw_data_df)
 ```
 
-## Datos faltantes
+## Valores faltantes (*NA*)
 
-En los resúmenes mostrados podemos observamos que las variables de municipio y tamaño contienen numerosos valores faltantes. Además, en algunas de las variables categóricas, aparecen niveles cuyo significado es equivalente a un dato faltante de cara al análisis: "No Consta", "Other", "Baja por Caducidad".
+En los resúmenes mostrados podemos observamos que las variables de municipio y tamaño contienen numerosos valores faltantes. Además, en algunas de las variables categóricas, aparecen niveles cuyo significado es equivalente a un dato faltante de cara al análisis: "No Consta", "(Other)", "Baja por Caducidad".
+
+En ninguno de los casos es posible realizar una imputación de datos faltantes, ya que no disponemos de ninguna información que nos permita obtener el municipio de alta o de baja faltante.
+
+Encontramos un máximo de municipios faltantes, tanto de alta como de baja, en la provincia de Barcelona. Por ello, podríamos afirmar que estos resultados son, en parte, *MAR*, aunque también hay un número considerable de valores faltantes correspondientes en el resto de provincias, lo que indica más bien que es *MCAR*.
+
+Por otra parte, los valores faltantes de las variables de tamaño de municipio están relacionadas en su totalidad a entradas en las que el municipio correspondiente (ALTA, BAJA o NAC) es un país extranjero. Por ello, estos valores faltantes son *MAR*.
 
 ## Análisis univariante
 
@@ -382,7 +394,7 @@ En esta gráfica podemos ver que únicamente las comunidades de Aragón, Ceuta y
 
 ### Numérica - Numérica
 
-La variable ANONAC debería tener una gran correlación con la variable EDAD.
+La variable **ANONAC** debería tener una gran correlación con la variable **EDAD**.
 
 ```{r bivar-anonac-edad1}
 bivar <- data_df %>%
@@ -400,7 +412,7 @@ par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
-Efectivamente, como era de suponer, obtenemos que las dos variables están correlacionadas totalmente, ya que EDAD= 2021 - ANONAC.
+Efectivamente, como era de suponer, obtenemos que las dos variables tienen un alto grado de correlación negativa, ya que $EDAD = 2021 - ANONAC$.
 
 ```{r bivar-anonac-edad2}
 cov <- cov(bivar, use='complete.obs')
@@ -416,7 +428,7 @@ cor_spearman <- cor(bivar, method= 'spearman', use='complete.obs')
 print(cor_spearman)
 ```
 
-La correlación de Pearson sirve para cuando la relación entre dos variables es lineal, mientras que la de Spearman es robusta frente a relaciones no lineales en datos ordenados. Por esta razón, ambas correlaciones son iguales, ya que la relación entre ambas variables es lineal.
+La correlación de Pearson sirve para cuando la relación entre dos variables es lineal, mientras que la de Spearman es robusta frente a relaciones no lineales en datos ordenados. Por esta razón, ambas correlaciones son iguales, ya que la relación entre las variables es lineal.
 
 ### Numéricas- Categóricas
 
@@ -442,7 +454,9 @@ plot(img, axes = FALSE)
 
 En esta gráfica, se observa que la gente cambia más de residencia alrededor de los 30 años, lo cual tiene sentido, ya que es la etapa de la vida en la que muchas personas deciden independizarse o formar una nueva familia.
 
-Si queremos estudiar ambas colas, un detalle importante a tener en cuenta y que está apoyado científicamente es que las mujeres viven más de media que los hombres y lo podemos observar a edades tardías, ya que hay una diferencia significativa entre hombres y mujeres a esa edad. Por otra parte, también se observa que tras el nacimiento de los hijos o en muchas ocasiones del segundo hijo de la pareja, las familias suelen tomar la decisión de mudarse a un hogar más amplio.
+Si queremos estudiar ambas colas, un detalle importante a tener en cuenta y que está apoyado científicamente es que las mujeres viven más de media que los hombres y lo podemos observar a edades tardías, ya que hay una diferencia significativa entre hombres y mujeres a esa edad.
+
+Por otra parte, también se observa un pequeño máximo local, que puede estar explicado por el hecho de que tras el nacimiento de los hijos o, en muchas ocasiones, del segundo hijo, las familias suelen tomar la decisión de mudarse a un hogar más amplio.
 
 Seguidamente, mediante un test T veremos si podemos considerar que las medias para hombres y mujeres son iguales.
 
@@ -510,6 +524,8 @@ par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
+No observamos que haya una clara diferencia. Cabe destacar que el máximo se da para movimientos entre municipios de menos de 10000 habitantes, lo cual es esperable ya que representan la categoría con mayor número de municipios.
+
 Para complementar este análisis, transformamos nuestros datos a fin de obtener un `data.frame` con la siguiente estructura:
 
  - **MUNI**: contiene todos los valores únicos de las variables **MUNIALTA** y **MUNIBAJA**.
@@ -557,13 +573,14 @@ plot(img, axes = FALSE)
 plot_file <- "./figure/boxplot_capital.jpg"
 if (!useJPGs | !file.exists(plot_file)) {
     muni_df %>%
-    na.omit()%>%
-    ggplot(aes(x = isCAPITAL, y = nNETO, fill = isCAPITAL)) +
-    geom_violin() +
-    labs(
-      y = "desplazamientos netos",
-      title = "Variación neta en función de isCAPITAL")
-  ggsave(plot_file, width = 1500, height = 1000, units = "px")
+      na.omit()%>%
+      filter(nNETO > -10000) %>%
+      ggplot(aes(x = isCAPITAL, y = nNETO, fill = isCAPITAL)) +
+      geom_violin() +
+      labs(
+        y = "desplazamientos netos",
+        title = "Variación neta en función de isCAPITAL")
+    ggsave(plot_file, width = 1500, height = 1000, units = "px")
 }
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
@@ -572,9 +589,11 @@ plot(img, axes = FALSE)
 
 Como cabía esperar, el número las variaciones residenciales netas de los municipios más grandes es más elevado, esto es, sí observamos un cierto grado de centralización por el cual un gran número de personas se desplaza hacia las ciudades más grandes.
 
+Por otra parte, observamos que hay una mayor cantidad de municipios no capitales con variaciones netas de menor valor, mientras que en las capitales se distribuyen en mayor medida hacia valores más extremos. Debemos aclarar que, para mejorar la calidad del gráfico, se ha omitido el dato correspondiente a Zaragoza, capital de provincia, que es -16762. Este número es muy extremo en comparación al resto.
+
 ## Análisis interactivo: mapas
 
-Empleamos la librería `leaflet` para crear mapas interactivos sobre los que representamos algunos de los resultados obtenidos en el análisis. También hemos usado la librería ggmap \parencite(ggmap) para obtener las longitudes y latitudes de las distintas ubicaciones. En este documento se expone una imagen fija de uno de ellos. Para poder consultar los mapas en su totalidad, ejecute el documento `ProyectoAED2023.Rmd`.
+Empleamos la librería `leaflet` para crear mapas interactivos sobre los que representamos algunos de los resultados obtenidos en el análisis. También hemos usado la librería ggmap \cite(ggmap) para obtener las longitudes y latitudes de las distintas ubicaciones. En este documento se expone una imagen fija de uno de ellos. Para poder consultar los mapas en su totalidad, ejecute las celdas de este apartado en el documento `ProyectoAED2023.Rmd`.
 
 ```{r plot-countries, eval = F}
 country_data <- get_net_country_movements(data_df)
@@ -608,94 +627,24 @@ print(chitest1)
 
 Por tanto, como p \(\geq\) < 0.05, rechazamos la hipótesis nula. y por tanto, concluimos que las variables COMUBAJA y COMUALTA son dependendientes.
 
-## Análisis de outliers y datos faltantes
+## Análisis de outliers
 
-Respecto a los valores NA, hemos decidido no imputar ningún valor faltante, ya que consideramos que nuestra muestra es suficientemente grande como para poder trabajar sin dichos valores y es preferible no introducir datos que modifiquen las características de nuestro conjunto de datos.
-
-Respecto a los outliers, únicamente hemos encontrado en la variable EDAD aunque no se pueden considerar valores imposibles, puesto que una persona puede vivir 110 años.
+Respecto a los outliers, únicamente hemos analizamos la variable numérica **EDAD**. Los outliers detectados corresponden a valores anómalos en comparación a la distribución teórica, sin embargo, en ningún caso son valores imposibles de edad, como serían valores negativos o extremadamente elevados.
 
 ```{r outliers}
-
 ## Análisis outliers Boxplot
-outliers <- data_df %>%
-  dplyr::select(EDAD) %>%
-  summarise(Media=mean(EDAD), Mediana=median(EDAD), IQR=IQR(EDAD), Q1 = quantile(EDAD,0.25),Q3 = quantile(EDAD, 0.75),
-ValorMinBoxplot= quantile(EDAD,0.25)-1.5*IQR(EDAD),           
-ValorMaxBoxplot=quantile(EDAD,0.75)+1.5*IQR(EDAD) )
+outliers <- detect_outliers(data_df$EDAD)
 outliers
-
-resumen <- outliers %>%
-  unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ")
-resumen
-
-valorescriticos<- data_df %>%
-  filter(EDAD > 81.5) %>%
-  count()
-valorescriticos
-
-outliers <- data_df %>%
-  group_by(SEXO) %>%
-  dplyr::select(EDAD) %>%
-  summarise(Media=mean(EDAD), Mediana=median(EDAD), IQR=IQR(EDAD), Q1 = quantile(EDAD,0.25),Q3 = quantile(EDAD, 0.75),
-ValorMinBoxplot= quantile(EDAD,0.25)-1.5*IQR(EDAD),           
-ValorMaxBoxplot=quantile(EDAD,0.75)+1.5*IQR(EDAD) )
-outliers
-
-resumen <- outliers %>%
-  unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ")
-resumen
-
-valorescriticos<- data_df %>%
-  group_by(SEXO) %>%
-  filter(SEXO=='Mujer',EDAD > 85.5) %>%
-  count()
-valorescriticos
-
-valorescriticos<- data_df %>%
-  group_by(SEXO) %>%
-  filter(SEXO=='Hombre',EDAD > 81.5) %>%
-  count()
-valorescriticos
 ```
 
-```{r}
-# Análisis outliers Regla 3 Sigma
-
-library(dplyr)
-outliers_sigma <- data_df %>%
-  dplyr::select(EDAD) %>%
-  summarise(Sigma=mean(EDAD) + 3*sd(EDAD))
-outliers_sigma
-
-valorescriticos_sigma<- data_df %>%
-  filter(EDAD > 93.5) %>%
-  count()
-valorescriticos_sigma
-
-
-outliers <- data_df %>%
-  group_by(SEXO) %>%
-  dplyr::select(EDAD) %>%
-  summarise(Sigma=mean(EDAD) + 3*sd(EDAD) )
-outliers
-
-valorescriticos_sigmah<- data_df %>%
-  group_by(SEXO) %>%
-  filter(SEXO=='Hombre',EDAD > 91.3) %>%
-  count()
-valorescriticos_sigmah
-
-valorescriticos_sigmam<- data_df %>%
-  group_by(SEXO) %>%
-  filter(SEXO=='Mujer',EDAD > 95.8) %>%
-  count()
-valorescriticos_sigmam
-```
-
-```{r}
-# Identificador Hampel
-3*mad(data_df$EDAD)
-```
-La regla del identificador de Hampel es el único que no considera que la distribución sea gaussiana. Sin embargo, etiqueta como outliers valores que realmente no lo son. Por otra parte, pese a que la Edad no sigue una distribución gaussiana, la regla 3 sigma es muy poco agresiva para la detección de outliers y por tanto, es la que menos valores detecta como outliers.
+La regla del identificador de Hampel es la única que no considera que la distribución sea gaussiana. Sin embargo, también etiqueta como outliers valores que realmente son posibles, ya que su límite superior es 87.4. Por otra parte, pese a que la edad no sigue una distribución gaussiana, la regla 3 sigma es muy poco agresiva para la detección de outliers y por tanto, es la que menos valores detecta como anómalos.
 
 # Conclusiones finales
+
+Podemos afirmar que, durante el año 2021 en España, las variaciones residenciales no presentaron ninguna dependencia significativa con la época del año. Por otra parte, sí observamos que la edad es un factor importante en cuanto al cambio de residencia: hay un máximo absoluto en torno a los 35 años, que es coherente con la edad de independización definitiva de muchas familias. También concluimos que esta relación es independiente del sexo.
+
+La tasa de migración de España con el extranjero durante el año estudiado es positiva y de valor elevado. Sin embargo, este resultado puede estar influido por la amplia cantidad de variaciones de salida codificadas como "Baja por Caducidad".
+
+Por último, observamos que gran cantidad de las variaciones residenciales se producen entre municipios pequeños, pero no suponen un desplazamiento neto elevado. No obstante, en las ciudades más grandes la tasa neta de variaciones residenciales es mucho más grande, lo cual es un indicio del proceso de centralización actual.
+
+En conclusión, hemos logrado importar, procesar, interpretar y analizar el dataset propuesto. Para ello, hemos hecho uso de numerosas funciones y librerías que nos han permitido realizar este proyecto de manera eficiente y obtener las conclusiones descritas.

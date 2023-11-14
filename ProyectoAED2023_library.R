@@ -371,6 +371,115 @@ rearrange_muni_data <- function(data_df) {
   return(muni_df)
 }
 
+detect_outliers <- function(data, methods = c("percentil", "tresSigma", "hampel", "boxplot")) {
+  
+  implementedMethods <- c("percentil", "tresSigma", "hampel", "boxplot")
+  if ( !all(methods %in% implementedMethods) ) {
+    
+    stop(paste0("Los métodos implementados son: ", paste0(implementedMethods, collapse = ", ")))
+  }
+  
+  n <- length(data)
+  nMiss <- sum(is.na(data))
+  results <- data.frame()
+  
+  if ("percentil" %in% methods) {
+    lowLim <- quantile(data, 0.05)
+    upLim  <- quantile(data, 0.95)
+    minNom <- min(data[which(data > lowLim)])
+    maxNom <- max(data[which(data < upLim)])
+    nOut   <- length(which(data < lowLim | data > upLim))
+    
+    outliers_percentil <- data.frame(
+      method = 'percentil',
+      n      = n,
+      nMiss  = nMiss,
+      nOut   = nOut,
+      lowLim = lowLim,
+      upLim  = upLim,
+      minNom = minNom,
+      maxNom = maxNom)
+    
+    results <- rbind(results, outliers_percentil)
+  }
+  
+  if ("tresSigma" %in% methods) {
+    umbral3s <- mean(data) + 3 * sd(data)
+    nOut3s   <- sum(abs(data) > umbral3s)
+    lowLim3s <- mean(data) - 3 * sd(data)
+    upLim3s  <- mean(data) + 3 * sd(data)
+    minNom   <- min(data[data >= lowLim3s])
+    maxNom   <- max(data[data <= upLim3s])
+    
+    outliers_3sigma <- data.frame(
+      method = 'tresSigma',
+      n      = n,
+      nMiss  = nMiss,
+      nOut   = nOut3s,
+      lowLim = lowLim3s,
+      upLim  = upLim3s,
+      minNom = minNom,
+      maxNom = maxNom
+    )
+    
+    results <- rbind(results, outliers_3sigma)
+  }
+  
+  if ("hampel" %in% methods) {
+    # Método Hampel
+    MADM         <- mad(data)
+    umbralHampel <- median(data) + 3 * MADM
+    nOutHampel   <- sum(abs(data - median(data)) > 3 * MADM)
+    lowLimHampel <- median(data) - 3 * MADM
+    upLimHampel  <- median(data) + 3 * MADM
+    minNom       <- min(data[data >= lowLimHampel])
+    maxNom       <- max(data[data <= upLimHampel])
+    
+    outliers_hampel <- data.frame(
+      method = 'hampel',
+      n      = n,
+      nMiss  = nMiss,
+      nOut   = nOutHampel,
+      lowLim = lowLimHampel,
+      upLim  = upLimHampel,
+      minNom = minNom,
+      maxNom = maxNom
+    )
+    
+    results <- rbind(results, outliers_hampel)
+  }
+  
+  if ("boxplot" %in% methods) {
+    # Método Regla Boxplot
+    Q3Q1          <- IQR(data)
+    Q3            <- quantile(data, probs = 0.75) %>% as.numeric()
+    Q1            <- quantile(data, probs = 0.25) %>% as.numeric()
+    umbralSup     <- Q3 + 1.5 * Q3Q1
+    umbralInf     <- Q1 - 1.5 * Q3Q1
+    nOutBoxplot   <- sum(data > umbralSup | data < umbralInf)
+    lowLimBoxplot <- umbralInf
+    upLimBoxplot  <- umbralSup
+    minNom        <- min(data[data >= lowLimBoxplot])
+    maxNom        <- max(data[data <= upLimBoxplot])
+    
+    outliers_boxplot <- data.frame(
+      method = 'boxplot',
+      n      = n,
+      nMiss  = nMiss,
+      nOut   = nOutBoxplot,
+      lowLim = lowLimBoxplot,
+      upLim  = upLimBoxplot,
+      minNom = minNom,
+      maxNom = maxNom
+    )
+    
+    results <- rbind(results, outliers_boxplot)
+  }
+  rownames(results) <- NULL
+  
+  return(results)
+}
+
 get_prov_location <- function(fileDir, dict_prov = NULL, googleKey = NULL, useKey = FALSE) {
   
   generate_prov_locations <- function(dict_prov, fileDir, googleKey, useKey) {

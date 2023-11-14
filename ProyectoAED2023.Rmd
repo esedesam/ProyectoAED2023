@@ -28,9 +28,7 @@ simplesummary: |
   El dataset de variaciones residenciales del INE (2021) contiene los datos de los
   cambios de residencia con origen y/o destino en España durante el año 2021.
 abstract: |
-  En este trabajo estudiamos la información de variaciones residenciales de 2021.
-  Para ello, definimos numerosas funciones que nos permiten preprocesar, transformar,
-  y analizar los resultados. 
+  Este trabajo presenta un análisis exploratorio de datos basado en un conjunto de datos de variaciones residenciales en España durante el año 2021. Se examinan las fluctuaciones en la residencia de personas, destacando tanto las altas como las bajas ocurridas a lo largo del año. A través de técnicas estadísticas y visualizaciones, se identifican patrones y tendencias en los movimientos de población, proporcionando una comprensión detallada de las dinámicas residenciales en el contexto español durante este periodo. Este análisis contribuye a una mejor comprensión de los cambios demográficos y puede ser fundamental para la toma de decisiones en planificación urbana y políticas de vivienda.
 # back matter
 keywords: |
   AED, ciencia de datos, ine, preprocesamiento, visualización, correlación
@@ -57,15 +55,14 @@ conflictsofinterest: |
 sampleavailability: |
   Los datos están disponibles en la página web del INE.
 supplementary: |
- The following supporting information can be downloaded at:  
- \linksupplementary{s1}, Figure S1: title; Table S1: title; Video S1: title.
+  No hay información de apoyo disponible.
 abbreviations:
   - short: INE
     long: Instituto Nacional de Estadística
   - short: AED
     long: Análisis Exploratorio de Datos
 bibliography: mybibfile.bib
-appendix: appendix.tex
+# appendix: appendix.tex
 endnotes: false
 output: 
   rticles::mdpi_article:
@@ -79,16 +76,17 @@ if (!require(knitr)) {
   library(knitr)
 }
 base::options(width = 50, digits = 3)
-knitr::opts_chunk$set(echo = F, include = T, message = T, error = F, warning = F, comment = NA, dpi = 100, tidy = T, cache.path = '.cache/', fig.path = './figure/', fig.width = 6, fig.height = 4, fig.align = "center")
+knitr::opts_chunk$set(echo = F, include = T, message = T, error = F, warning = F, comment = NA, dpi = 100, tidy = T, cache.path = '.cache/', fig.path = './figure/', fig.width = 5, fig.height = 3, fig.align = "center")
+useJPGs <- TRUE
 ```
 
-```{r packages}
+```{r packages, message = F}
 # Carga de paquetes necesarios con pacman
 if (!require(pacman)) {
   install.packages("pacman")
   library(pacman)
 }
-pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras, leaflet.extras2, sf, colorspace, car, fitdistrplus, ggmosaic)
+pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leaflet.extras, leaflet.extras2, sf, colorspace, car, fitdistrplus, ggmosaic, JPEG, imager)
 ```
 
 # Datos seleccionados
@@ -218,19 +216,19 @@ data_df <- convert_numeric_vars(data_df, vars_table)
 
 En primer lugar, realizamos un summary para obtener la información esencial de cada variable.
 
-```{r}
+```{r summ-data}
 summary(data_df)
 ```
 
 Seguidamente, observamos el tipo de cada variable para confirmar que estén en el formato adecuado.
 
-```{r}
+```{r str-data}
 str(data_df)
 ```
 
 Tras observar las diferentes variables del conjunto de datos, decidimos eliminar aquellas variables que no aportan información valiosa en nuestro conjunto de datos.
 
-```{r}
+```{r elim-vars1}
 elim <- c('MESNAC', 'ANOVAR')
 
 data_df <- data_df[, !(names(data_df) %in% elim)]
@@ -252,22 +250,46 @@ En las nuevas variables de comunidades autónomas, las localizaciones en el extr
 data_df <- add_comu_variables(data_df, municipios_data, raw_data_df)
 ```
 
-
-```{r, include = F}
+```{r numer}
 # Análisis variables numericas
 numer<- data_df %>%
   select_if(is.numeric)
 
-boxplot(numer$EDAD)
-table(numer$MESVAR)
+plot_file <- "./figure/boxplot_edad.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  jpeg(plot_file, width = 500, height = 350)
+  boxplot(numer$EDAD)
+  dev.off()
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 
-descdist(numer$EDAD)
-descdist(numer$MESVAR)
+
+plot_file <- "./figure/descdist_edad.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  jpeg(plot_file, width = 500, height = 350)
+  descdist(numer$EDAD)
+  dev.off()
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+
+plot_file <- "./figure/descdist_mesvar.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  jpeg(plot_file, width = 500, height = 350)
+  descdist(numer$MESVAR)
+  dev.off()
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 ```
 
 Mediante los gráficos de Cullen y Frey observamos que la variable MESVAR la podemos aproximar mediante una función uniforme. Por tanto, podemos eliminarla también ya que no aporta valor a nuestro conjunto de datos. Si tuviésemos datos de más años podríamos calcular la serie temporal y observar si hay alguna relación entre mudarse y el mes de cambio de residencia. Por otra parte, la variable Edad nos indica que se puede ajustar bajo una distribución gamma, lo cual tiene sentido, ya que la mediana es 35.7 y sin embargo, alcanza valores de hasta 111 años. Esto es debido a que la mayor parte de la gente se muda alrededor de la treintena y una vez ya han conseguido un trabajo y una familia estable, la decisión de cambiar de residencia es cada vez más complicada.
 
-```{r}
+```{r elim-vars2}
 elim <- c('MESVAR')
 
 data_df <- data_df[, !(names(data_df) %in% elim)]
@@ -275,19 +297,27 @@ data_df <- data_df[, !(names(data_df) %in% elim)]
 
 A pesar de ser una distribución gamma, mediante la función `qqPlot()` vemos si se puede aproximar también mediante una distribución normal y observamos que no sería una representación idónea.
 
-```{r, include = F}
-qqPlot(
-  data_df$EDAD[!is.na(data_df$EDAD)],
-  distribution = "norm",
-  id = FALSE,
-  ylab = "Cuantiles de edad")
+```{r qqplot}
+plot_file <- "./figure/qqplot_edad.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  jpeg(plot_file, width = 500, height = 350)
+  qqPlot(
+    data_df$EDAD[!is.na(data_df$EDAD)],
+    distribution = "norm",
+    id = FALSE,
+    ylab = "Cuantiles de edad")
+  dev.off()
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 ```
 
 ## Análisis univariante (Variables Categóricas)
 
 Tras analizar las edades y el mes de variación, planteamos otra cuestión de vital importancia como es el hecho de estudiar el éxodo rural. Para ello, decidimos estudiar el movimiento entre provincias. 
 
-```{r}
+```{r univ-prov}
 bajas <- table(data_df$PROVBAJA)
 altas <- table(data_df$PROVALTA)
 
@@ -301,7 +331,7 @@ El dato más significativo que se observa es que España es un país con un mayo
 
 Si analizamos todas las provincias o municipios, tenemos muchos niveles dentro del factor, así que vamos a intentar obtener información más relevante a través del estudio de las comunidades autónomas.
 
-```{r}
+```{r univ-comus}
 bajas <- table(data_df$COMUBAJA)
 altas <- table(data_df$COMUALTA)
 
@@ -316,7 +346,17 @@ elim <- c('Extranjero')
 var_com <- var_com[!(names(var_com) %in% elim)]
 
 
-barplot(var_com, names.arg = names(var_com), cex.names = 0.5, las=2, main = "Diferencia entre Altas y Bajas", xlab = "Categorías", ylab = "Diferencia")
+plot_file <- "./figure/barplot_diffs.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  jpeg(plot_file, width = 500, height = 350)
+  barplot(var_com, names.arg = names(var_com),
+          cex.names = 0.5, las=2, main = "Diferencia entre Altas y Bajas",
+          xlab = "Categorías", ylab = "Diferencia")
+  dev.off()
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 ```
 
 ## Análisis bivariante
@@ -325,17 +365,25 @@ barplot(var_com, names.arg = names(var_com), cex.names = 0.5, las=2, main = "Dif
 
 La variable ANONAC debería tener una gran correlación con la variable EDAD.
 
-```{r, include = F}
+```{r bivar-anonac-edad1}
 bivar <- data_df %>%
   dplyr::select(ANONAC, EDAD) %>%
   na.omit()
 
-pairs(bivar)
+plot_file <- "./figure/pairs_anonac_edad.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  jpeg(plot_file, width = 500, height = 350)
+  pairs(bivar)
+  dev.off()
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 ```
 
 Efectivamente, como era de suponer, obtenemos que las dos variables están correlacionadas totalmente, ya que EDAD= 2021 - ANONAC.
 
-```{r}
+```{r bivar-anonac-edad2}
 cov <- cov(bivar, use='complete.obs')
 
 print(cov)
@@ -355,16 +403,22 @@ La correlación de Pearson sirve para cuando la relación entre dos variables es
 
 Seguidamente, utilizando la librería `ggplot` vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 
-```{r}
-histograma <- ggplot(data_df, aes(x=EDAD, fill=SEXO)) +
-  geom_histogram(binwidth=5, position="dodge") +
-  labs(
-    title="Histograma de Edades por Sexo",
-    x="Edad",
-    y="Frecuencia"
-  ) +
-  scale_fill_manual(values=c("Hombre"="blue", "Mujer"="pink"))
-print(histograma)
+```{r hist-num-cat}
+plot_file <- "./figure/hist_edad_sexo.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  ggplot(data_df, aes(x=EDAD, fill=SEXO)) +
+    geom_histogram(binwidth=5, position="dodge") +
+    labs(
+      title="Histograma de Edades por Sexo",
+      x="Edad",
+      y="Frecuencia"
+    ) +
+    scale_fill_manual(values=c("Hombre"="blue", "Mujer"="pink"))
+  ggsave(plot_file, width = 1500, height = 1000, units = "px")
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 ```
 
 En esta gráfica, se observa que la gente cambia más de residencia alrededor de los 30 años, lo cual tiene sentido, ya que es la etapa de la vida en la que muchas personas deciden independizarse o formar una nueva familia.
@@ -373,16 +427,22 @@ Si queremos estudiar ambas colas, un detalle importante a tener en cuenta y que 
 
 Seguidamente, mediante un test T veremos si podemos considerar que las medias para hombres y mujeres son iguales.
 
-```{r}
+```{r boxplot-sexo}
 mujeres <- filter(data_df, SEXO == "Mujer")
 hombres <- filter(data_df, SEXO=='Hombre')
 
 t.test(mujeres$EDAD,hombres$EDAD)
 
-ggplot(data_df, aes(x = SEXO, y = EDAD, fill = SEXO)) +
-  geom_boxplot() +
-  labs(title = "Boxplot of EDAD by SEXO", x = "SEXO", y = "EDAD")
-
+plot_file <- "./figure/boxplot_edad_sexo.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  ggplot(data_df, aes(x = SEXO, y = EDAD, fill = SEXO)) +
+    geom_boxplot() +
+    labs(title = "Boxplot of EDAD by SEXO", x = "SEXO", y = "EDAD")
+  ggsave(plot_file, width = 1500, height = 1000, units = "px")
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 ```
 
 Por tanto, rechazamos la hipótesis nula de que las medias de edad de los hombres y las mujeres es la misma.
@@ -407,21 +467,28 @@ mosaic_df <- data_df[
 levels(mosaic_df$TAMUBAJA) <- c(paste0("tam_", 1:5), "capital")
 levels(mosaic_df$TAMUALTA) <- c(paste0("tam_", 1:5), "capital")
 
-ggplot(mosaic_df) +
-  geom_mosaic(aes(
-    x = product(TAMUALTA, TAMUBAJA),
-    fill = TAMUALTA)) +
-  geom_mosaic_text(
-    aes(
+plot_file <- "./figure/mosaic_tamu.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  ggplot(mosaic_df) +
+    geom_mosaic(aes(
       x = product(TAMUALTA, TAMUBAJA),
-      label = after_stat(.wt)),
-    as.label = TRUE) +
-  labs(
-    title = "Número de variaciones residenciales en función de TAMUALTA y TAMUBAJA",
-    x = "TAMUBAJA",
-    y = "TAMUALTA") +
-  theme_minimal() +
-  guides(fill = "none")
+      fill = TAMUALTA)) +
+    geom_mosaic_text(
+      aes(
+        x = product(TAMUALTA, TAMUBAJA),
+        label = after_stat(.wt)),
+      as.label = TRUE) +
+    labs(
+      title = "Variaciones residenciales frente a tamaños",
+      x = "TAMUBAJA",
+      y = "TAMUALTA") +
+    theme_minimal() +
+    guides(fill = "none")
+  ggsave(plot_file, width = 1500, height = 1000, units = "px")
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 ```
 
 Para complementar este análisis, transformamos nuestros datos a fin de obtener un `data.frame` con la siguiente estructura:
@@ -448,26 +515,40 @@ muni_df <- rearrange_muni_data(data_df)
 
 Ahora podemos realizar diferentes representaciones sobre este nuevo dataset transformado.
 
-```{r}
-# muni_df <- muni_df %>%
-#   dplyr::select(-MES)
+```{r muni-plots}
+muni_df <- muni_df %>%
+  dplyr::select(MUNI, TAMU, nNETO, isCAPITAL)
 
-muni_df %>%
-  na.omit()%>%
-  filter(TAMU != "Municipio capital de provincia") %>%
-  ggplot(aes(y = nNETO, color = TAMU)) +
-  geom_boxplot() +
-  labs(
-    y = "desplazamientos netos",
-    title = "Número de desplazamientos netos en función del tamaño")
+plot_file <- "./figure/boxplot_tamu.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+  muni_df %>%
+    na.omit()%>%
+    filter(TAMU != "Municipio capital de provincia") %>%
+    ggplot(aes(y = nNETO, color = TAMU)) +
+      geom_boxplot() +
+      labs(
+        y = "desplazamientos netos",
+        title = "Variación neta en función del tamaño")
+  ggsave(plot_file, width = 1500, height = 1000, units = "px")
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 
-muni_df %>%
-  na.omit()%>%
-  ggplot(aes(x = isCAPITAL, y = nNETO, fill = isCAPITAL)) +
-  geom_violin() +
-  labs(
-    y = "desplazamientos netos",
-    title = "Número de desplazamientos netos en función de isCAPITAL")
+plot_file <- "./figure/boxplot_capital.jpg"
+if (!useJPGs | !file.exists(plot_file)) {
+    muni_df %>%
+    na.omit()%>%
+    ggplot(aes(x = isCAPITAL, y = nNETO, fill = isCAPITAL)) +
+    geom_violin() +
+    labs(
+      y = "desplazamientos netos",
+      title = "Variación neta en función de isCAPITAL")
+  ggsave(plot_file, width = 1500, height = 1000, units = "px")
+}
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
 ```
 
 Como cabía esperar, el número las variaciones residenciales netas de los municipios más grandes es más elevado, esto es, sí observamos un cierto grado de centralización por el cual un gran número de personas se desplaza hacia las ciudades más grandes.
@@ -493,7 +574,7 @@ residence_variations_map
 
 ### Características
 
-```{r}
+```{r chisq-comu}
 tablacontingencia1 <- table(data_df$COMUBAJA, data_df$COMUALTA)
 chitest1 <- chisq.test(tablacontingencia1, correct = FALSE)
 print(chitest1)
@@ -507,7 +588,7 @@ Respecto a los valores NA, hemos decidido no imputar ningún valor faltante, ya 
 
 Respecto a los outliers, únicamente hemos encontrado en la variable EDAD aunque no se pueden considerar valores imposibles, puesto que una persona puede vivir 110 años.
 
-```{r}
+```{r outliers}
 outliers <- data_df %>%
   dplyr::select(EDAD) %>%
   summarise(Media=mean(EDAD), Mediana=median(EDAD), IQR=IQR(EDAD), Q1 = quantile(EDAD,0.25),Q3 = quantile(EDAD, 0.75),

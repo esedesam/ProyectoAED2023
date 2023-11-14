@@ -66,8 +66,8 @@ load_excel_dicts <- function(excel_dict_file, main_sheet = "Diseño") {
   
   for (sheet_name in sheet_names[sheet_names != main_sheet]) {
     
-    sheet_data <- read_excel(excel_dict_file, sheet = sheet_name,
-                             col_names = FALSE)
+    sheet_data <- suppressMessages(read_excel(excel_dict_file, sheet = sheet_name,
+                             col_names = FALSE))
     
     # Añadimos el nombre del diccionario del anexo
     if (sheet_name == "Anexo - Lista de países") {
@@ -299,6 +299,76 @@ get_comu_dict <- function(comu_dict_dir = "./data/comu_dict.RData") {
       file = comu_dict_dir)
   }
   return(comu_dict)
+}
+
+rearrange_muni_data <- function(data_df) {
+  
+  # Definición de función para calcular la moda
+  get_mode <- function(vec) {
+    
+    vec_u <- vec[!is.na(vec)]
+    if (length(vec_u) > 0) {
+      vec_u <- unique(vec)
+      mode_val <- vec_u[which.max(tabulate(match(vec, vec_u)))]
+    } else {
+      mode_val <- NA
+    }
+    
+    return(mode_val)
+  }
+  
+  data_df <- data_df %>%
+    filter(complete.cases(MUNIALTA, MUNIBAJA))
+  
+  muni_df <- data.frame()
+  
+  muni_unique <- unique(c(data_df$MUNIALTA, data_df$MUNIBAJA))
+  
+  for (muni in muni_unique) {
+    
+    muni_rows <- data_df[which(data_df$MUNIALTA == muni | data_df$MUNIBAJA == muni), ]
+    
+    tamu <- NA
+    for (idx in 1 : nrow(muni_rows)) {
+      
+      tamu <- ifelse(
+        muni_rows$MUNIALTA[1] == muni,
+        muni_rows$TAMUALTA[1],
+        muni_rows$TAMUBAJA[1])
+      
+      if (!is.na(tamu)) break
+    }
+    edad    <- mean(muni_rows$EDAD, na.rm = TRUE)
+    mes     <- get_mode(muni_rows$MESVAR)
+    n_bajas <- sum(data_df$MUNIBAJA == muni, na.rm = TRUE)
+    n_altas <- sum(data_df$MUNIALTA == muni, na.rm = TRUE)
+    
+    new_row <- data.frame(
+      MUNI = muni,
+      TAMU = tamu,
+      EDAD = edad,
+      MES = mes,
+      nBAJAS = n_bajas,
+      nALTAS = n_altas)
+    
+    muni_df <- rbind(muni_df, new_row)
+  }
+  
+  muni_df <- muni_df %>%
+    mutate(
+      TAMU = factor(
+        x = muni_df$TAMU,
+        levels = 1:length(levels(data_df$TAMUALTA)),
+        labels = levels(data_df$TAMUALTA)),
+      MES = factor(
+        x = MES,
+        levels = 1:12,
+        labels = month.abb),
+      nTOTAL = nALTAS + nBAJAS,
+      nNETO = nALTAS - nBAJAS,
+      isCAPITAL = (TAMU == "Municipio capital de provincia"))
+  
+  return(muni_df)
 }
 
 get_prov_location <- function(fileDir, dict_prov = NULL, googleKey = NULL, useKey = FALSE) {

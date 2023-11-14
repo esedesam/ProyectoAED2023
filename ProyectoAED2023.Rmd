@@ -16,7 +16,7 @@ authorcitation: |
   Hinarejos, J.; Ortega, S.
 # firstnote to eighthnote
 firstnote: |
-  These authors contributed equally to this work.
+  Estos autores contribuyeron de manera equitativa a este trabajo.
 correspondence: |
   saorme@alumni.uv.es.
 # document options
@@ -25,90 +25,45 @@ type: article
 status: submit
 # front matter
 simplesummary: |
-  A Simple summary goes here.
+  El dataset de variaciones residenciales del INE (2021) contiene los datos de los
+  cambios de residencia con origen y/o destino en España durante el año 2021.
 abstract: |
-  A single paragraph of about 200 words maximum. For research articles, 
-  abstracts should give a pertinent overview of the work. We strongly encourage
-  authors to use the following style of structured abstracts, but without 
-  headings: 1) Background: Place the question addressed in a broad context and
-  highlight the purpose of the study; 2) Methods: Describe briefly the main
-  methods or treatments applied; 3) Results: Summarize the article's main 
-  findings; and 4) Conclusion: Indicate the main conclusions or interpretations. 
-  The abstract should be an objective representation of the article, it must not 
-  contain results which are not presented and substantiated in the main text and 
-  should not exaggerate the main conclusions.
+  En este trabajo estudiamos la información de variaciones residenciales de 2021.
+  Para ello, definimos numerosas funciones que nos permiten preprocesar, transformar,
+  y analizar los resultados. 
 # back matter
 keywords: |
-  keyword 1; keyword 2; keyword 3 (list three to ten pertinent keywords specific 
-  to the article, yet reasonably common within the subject discipline.).
+  AED, ciencia de datos, ine, preprocesamiento, visualización, correlación
 acknowledgement: |
-  All sources of funding of the study should be disclosed. Please clearly 
-  indicate grants that you have received in support of your research work. 
-  Clearly state if you received funds for covering the costs to publish in open 
-  access.
+  Hasta la fecha de publicación, no se ha recibido ningún tipo de financiamiento
+  para este proyecto.
 authorcontributions: |
-  For research articles with several authors, a short paragraph specifying their 
-  individual contributions must be provided. The following statements should be 
-  used ``X.X. and Y.Y. conceive and designed the experiments; X.X. performed the 
-  experiments; X.X. and Y.Y. analyzed the data; W.W. contributed 
-  reagents/materials/analysis tools; Y.Y. wrote the paper.'' Authorship must be
-  limited to those who have contributed substantially to the work reported.
+  S.O. y J.H. hicieron la búsqueda y selección del datasetM S.O. realizó el
+  preprocesamiento de los datos; J.H. realizó un análisis estadístico profundo de
+  los datos procesados; S.O. y J.H. realizaron las representaciones gráficas;
+  S.O. y J.H. redactaron el trabajo.
 funding: |
-  This research received no external funding.
+  Este proyecto no ha recibido financiación externa.
 institutionalreview: |
-  In this section, you should add the Institutional Review Board Statement and 
-  approval number, if relevant to your study. You might choose to exclude 
-  this statement if the study did not require ethical approval. Please note 
-  that the Editorial Office might ask you for further information. Please add 
-  “The study was conducted in accordance with the Declaration of Helsinki, 
-  and approved by the Institutional Review Board (or Ethics Committee) of 
-  NAME OF INSTITUTE (protocol code XXX and date of approval).” for studies 
-  involving humans. OR “The animal study protocol was approved by the 
-  Institutional Review Board (or Ethics Committee) of NAME OF INSTITUTE 
-  (protocol code XXX and date of approval).” for studies involving animals. 
-  OR “Ethical review and approval were waived for this study due to REASON 
-  (please provide a detailed justification).” OR “Not applicable” for
-   studies not involving humans or animals.
+  El estudio se ha realizado de acuerdo a la licencia de libre disposición de los
+  datos anonimizados del INE.
 informedconsent: |
-  Any research article describing a study involving humans should contain this 
-  statement. Please add ``Informed consent was obtained from all subjects 
-  involved in the study.'' OR ``Patient consent was waived due to REASON 
-  (please provide a detailed justification).'' OR ``Not applicable'' for 
-  studies not involving humans. You might also choose to exclude this statement 
-  if the study did not involve humans.
-  
-  Written informed consent for publication must be obtained from participating 
-  patients who can be identified (including by the patients themselves). Please 
-  state ``Written informed consent has been obtained from the patient(s) to 
-  publish this paper'' if applicable.
+  No aplicable.
 dataavailability: |
-  We encourage all authors of articles published in MDPI journals to share 
-  their research data. In this section, please provide details regarding where 
-  data supporting reported results can be found, including links to publicly 
-  archived datasets analyzed or generated during the study. Where no new data 
-  were created, or where data is unavailable due to privacy or ethical 
-  re-strictions, a statement is still required. Suggested Data Availability 
-  Statements are available in section “MDPI Research Data Policies” at 
-  \url{https://www.mdpi.com/ethics}.
+  Los resultados de este proyecto se pueden encontrar en el repositorio de GitHub
+  creado a fin de contenerlo: https://github.com/esedesam/ProyectoAED2023.git.
 conflictsofinterest: |
-  Declare conflicts of interest or state 'The authors declare no conflict of 
-  interest.' Authors must identify and declare any personal circumstances or
-  interest that may be perceived as inappropriately influencing the
-  representation or interpretation of reported research results. Any role of the
-  funding sponsors in the design of the study; in the collection, analyses or 
-  interpretation of data in the writing of the manuscript, or in the decision to 
-  publish the results must be declared in this section. If there is no role, 
-  please state 'The founding sponsors had no role in the design of the study; 
-  in the collection, analyses, or interpretation of data; in the writing of the 
-  manuscript, an in the decision to publish the results'.
+  Los autores declaran la ausencia de conflictos de intereses.
 sampleavailability: |
-  Samples of the compounds ...... are available from the authors.
+  Los datos están disponibles en la página web del INE.
 supplementary: |
  The following supporting information can be downloaded at:  
  \linksupplementary{s1}, Figure S1: title; Table S1: title; Video S1: title.
 abbreviations:
   - short: INE
     long: Instituto Nacional de Estadística
+  - short: AED
+    long: Análisis Exploratorio de Datos
 bibliography: mybibfile.bib
 appendix: appendix.tex
 endnotes: false
@@ -124,10 +79,10 @@ if (!require(knitr)) {
   library(knitr)
 }
 base::options(width = 50, digits = 3)
-knitr::opts_chunk$set(echo = T, message = T, error = F, warning = F, comment = NA, dpi = 100, tidy = T, cache.path = '.cache/', fig.path = './figure/', include = T)
+knitr::opts_chunk$set(echo = F, include = T, message = T, error = F, warning = F, comment = NA, dpi = 100, tidy = T, cache.path = '.cache/', fig.path = './figure/', fig.width = 6, fig.height = 4, fig.align = "center")
 ```
 
-```{r packages, message = T, include = T, echo = T}
+```{r packages}
 # Carga de paquetes necesarios con pacman
 if (!require(pacman)) {
   install.packages("pacman")
@@ -141,6 +96,15 @@ pacman::p_load(kableExtra, readxl, stringr, tidyr, dplyr, ggmap, leaflet, leafle
 Hemos escogido los datos de variaciones residenciales en 2021 del INE. Estos datos están disponibles en el siguiente enlace: [https://go.uv.es/saorme/ine-var-res-2021](https://go.uv.es/saorme/ine-var-res-2021).
 
 Adicionalmente, hemos empleado la relación de municipios de 2021, disponible en: [https://go.uv.es/saorme/ine-muni-2021](https://go.uv.es/saorme/ine-muni-2021).
+
+Se trata de una base de microdatos del INE, procedente de las encuestas realizadas a lo largo de ese mismo año.
+
+## Preguntas planteadas
+
+ - ¿Se concentran las variaciones residenciales durante alguna época concreta del año?
+ - ¿Hay alguna dependencia de la cantidad de variaciones residenciales con la edad? Si es así, ¿depende también de la edad?
+ - ¿Cómo es la tasa de migración de España con el extranjero?
+ - ¿Hay una relación significativa entre el tamaño de los municipios y el número de variaciones que se producen en ellos? ¿Es el éxodo rural un problema actual?
 
 # Previsualización de los datos
 
@@ -160,12 +124,14 @@ prev_objects <- ls()
 source("ProyectoAED2023_library.R")
 new_objects <- ls()
 loaded_functions <- new_objects[!(new_objects %in% prev_objects)]
-cat("Funciones cargadas:", loaded_functions, sep = "\n")
+cat("Funciones cargadas: ", paste0(loaded_functions, collapse = ", "))
 ```
 
 # Lectura de los ficheros
 
-En primer lugar, leemos la información de todos los ficheros necesarios.
+En primer lugar, leemos la información de todos los ficheros necesarios: el fichero principal, el excel de metadatos y el excel que contiene el diccionario de municipios.
+
+Para ello, hacemos uso de las funciones `readLines()` y `readxl::read_excel()`. Las hojas adicionales del excel de metadatos, que contienen los diccionarios de las distintas variables, se almacenan en una lista.
 
 ```{r load-files}
 data_file <- "./data/md_EVR_2021.txt"
@@ -177,13 +143,17 @@ raw_data <- readLines(data_file, encoding = "UTF-8")
 
 vars_table <- read_excel(excel_dict_file, sheet = main_sheet,
                          range = "A2:J19", col_names = TRUE)
+
+sheet_list <- load_excel_dicts(excel_dict_file)
+municipios_data <- read_excel(municipios_file, skip = 1,
+                                  col_names = TRUE)
 ```
 
 # Preprocesado
 
 ## Limpieza de longitud incorrecta
 
-Como primera comprobación, nos aseguramos de que todas las entradas de los datos crudos tienen la longitud adecuada, definida en los metadatos.
+Como primera comprobación, nos aseguramos de que todas las entradas de los datos crudos tienen la longitud adecuada. Este valor está definido en la tabla de metadatos.
 
 ```{r check-length}
 entry_length <- vars_table$Longitud[vars_table$Variable == "TOTAL"]
@@ -196,7 +166,7 @@ vars_table <- vars_table[vars_table$Variable != "TOTAL", ]
 
 ## Creación del dataframe
 
-Dividimos los datos en un `data.frame` a partir de las posiciones y longitudes definidas en los metadatos.
+Una vez nos hemos asegurado de que todas las entradas tienen la longitud correcta, dividimos cada una de ellas en distintas variables de un `data.frame` a partir de las posiciones y longitudes definidas en los metadatos.
 
 ```{r split-data}
 raw_data_df <- split_raw_data(filtered_raw_data, vars_table)
@@ -204,26 +174,28 @@ raw_data_df <- split_raw_data(filtered_raw_data, vars_table)
 
 ## Obtención de los diccionarios
 
-A continuación, extraemos de los ficheros adicionales la información necesaria para interpretar los códigos de los datos crudos.
+A continuación, extraemos de los ficheros adicionales la información necesaria para interpretar los códigos de los datos crudos. Generamos dos variables:
+
+ - `dict_list`: es una lista, en la cual cada elemento corresponde a un diccionario. A su vez, estos elementos son listas, que contienen información útil: la hoja donde se encuentra el diccionario, las variables a las que debe ser aplicado, y un valor lógico que indica si debe ser combinado con el diccionario adicional de municipios.
+ 
+ - `dict_info`: es un `data.frame` en el que almacenamos los códigos y descripciones de todos los diccionarios a aplicar. Dado que los códigos no son únicos entre los distintos diccionarios, también añadimos una columna que indica el nombre del diccionario.
 
 ```{r get-dicts}
-sheet_list <- load_excel_dicts(excel_dict_file)
-municipios_data <- read_excel(municipios_file, skip = 1,
-                                  col_names = TRUE)
-
 dict_list <- create_dict_list(vars_table)
 dict_info <- get_dict_from_sheets(dict_list, sheet_list, municipios_data)
 ```
 
 ## Interpretación de los códigos de las variables
 
-Una vez obtenidos los diccionarios, los aplicamos a los datos crudos divididos.
+Una vez obtenidos los diccionarios, los aplicamos a los datos crudos divididos. Para ello, seleccionamos cada uno de los diccionarios descritos en `dict_list` y los aplicamos a todas las variables que ahí se indican, variable a variable.
+
+El intercambio de código a descripción se realiza definiendo cada variable como un `factor` cuyos niveles son los códigos y las etiquetas, las descripciones. Este método ha resultado ser más rápido que la búsqueda de coincidencias variable-código y sustitución con la descripción empleando la función `match()`.
 
 ```{r apply-dicts}
 data_df <- apply_dict_to_data(raw_data_df, dict_info, dict_list)
 ```
 
-Adicionalmente, verificamos que la interpretación se ha realizado correctamente. Para ello, buscamos los valores no disponibles en el nuevo `data.frame` y comprobamos si proceden de códigos mal interpretados o, por el contrario, corresponden a entradas en blanco.
+Adicionalmente, verificamos que la interpretación se ha realizado correctamente. Para ello, buscamos los valores no disponibles en el nuevo `data.frame` que no eran `NAs` en el original, y comprobamos si proceden de códigos mal interpretados o, por el contrario, corresponden a entradas en blanco.
 
 ```{r check-na}
 na_summary <- check_na_procedence(raw_data_df, data_df)
@@ -231,41 +203,46 @@ na_summary <- check_na_procedence(raw_data_df, data_df)
 kable(na_summary)
 ```
 
-A continuación, vamos a cambiar el tipo de las variables para tenerlas en el formato adecuado indicado en los metadatos.
+El último paso del preprocesado del dataset es la conversión de las variables para al formato adecuado. Está indicado en los metadatos, donde figuran dos tipos:
+
+ - N: numérico -> `numeric`
+ - A: alfanumérico -> `factor`
 
 ```{r convert-num}
 data_df <- convert_numeric_vars(data_df, vars_table)
 ```
 
+# Análisis de las variables
 
 ## Análisis univariante
 
 En primer lugar, realizamos un summary para obtener la información esencial de cada variable.
+
 ```{r}
 summary(data_df)
 ```
+
 Seguidamente, observamos el tipo de cada variable para confirmar que estén en el formato adecuado.
 
 ```{r}
 str(data_df)
 ```
 
-### Eliminar variables
 Tras observar las diferentes variables del conjunto de datos, decidimos eliminar aquellas variables que no aportan información valiosa en nuestro conjunto de datos.
 
 ```{r}
-elim <- c('MESNAC', 'ANONAC', 'ANOVAR')
+elim <- c('MESNAC', 'ANOVAR')
 
 data_df <- data_df[, !(names(data_df) %in% elim)]
 ```
 
 Decidimos eliminar las variables:
 
-MESNAC: Consideramos que no aporta valor el mes de nacimiento de una persona.
-ANONAC: Es una variable duplicada, ya que aporta la misma información que la edad de las personas.
-ANOVAR: Todos los datos provienen del año 2021.
+ - **MESNAC**: Consideramos que no aporta valor el mes de nacimiento de una persona.
 
-Otra variable que es posible que no sea de mucho interés es MESVAR, pero de momento decidimos no eliminarla para estudiar si existe alguna época del año en la cual las personas decidan cambiar de residencia con mayor frecuencia.
+ - **ANOVAR**: Todos los datos provienen del año 2021.
+
+Otra variable que es posible que no sea de mucho interés es **MESVAR**, pero de momento decidimos no eliminarla para estudiar si existe alguna época del año en la cual las personas decidan cambiar de residencia con mayor frecuencia.
 
 Por otra parte, creamos nuevas variables que contienen las comunidades autónomas, para poder analizar también las variaciones residenciales entre ellas. Para ello, aprovechamos el diccionario de municipios, ya que en él también aparecen codificadas las comunidades autónomas. Dado que las variables de municipios presentan muchos NAs, intentamos imputar las comunidades autónomas faltantes buscando coincidencias de la provincia.
 
@@ -276,9 +253,8 @@ data_df <- add_comu_variables(data_df, municipios_data, raw_data_df)
 ```
 
 
-```{r}
+```{r, include = F}
 # Análisis variables numericas
-
 numer<- data_df %>%
   select_if(is.numeric)
 
@@ -297,13 +273,17 @@ elim <- c('MESVAR')
 data_df <- data_df[, !(names(data_df) %in% elim)]
 ```
 
-A pesar de ser una distribución gamma, mediante la función qqPlot vemos si se puede aproximar también mediante una distribución normal y observamos que no sería una representación idónea.
+A pesar de ser una distribución gamma, mediante la función `qqPlot()` vemos si se puede aproximar también mediante una distribución normal y observamos que no sería una representación idónea.
 
-```{r}
-qqPlot(data_df$EDAD, distribution = "norm")
+```{r, include = F}
+qqPlot(
+  data_df$EDAD[!is.na(data_df$EDAD)],
+  distribution = "norm",
+  id = FALSE,
+  ylab = "Cuantiles de edad")
 ```
 
-## Análisis univariante( Variables Categóricas)
+## Análisis univariante (Variables Categóricas)
 
 Tras analizar las edades y el mes de variación, planteamos otra cuestión de vital importancia como es el hecho de estudiar el éxodo rural. Para ello, decidimos estudiar el movimiento entre provincias. 
 
@@ -320,7 +300,6 @@ var_provincias <- altas - bajas
 El dato más significativo que se observa es que España es un país con un mayor número de inmigrantes que de emigrantes y por consecuencia, la población en las diferentes provincias españolas aumenta. Además, otro dato curioso es que no se observa un decrecimiento en las provincias del interior de España "La España despoblada". 
 
 Si analizamos todas las provincias o municipios, tenemos muchos niveles dentro del factor, así que vamos a intentar obtener información más relevante a través del estudio de las comunidades autónomas.
-
 
 ```{r}
 bajas <- table(data_df$COMUBAJA)
@@ -340,23 +319,20 @@ var_com <- var_com[!(names(var_com) %in% elim)]
 barplot(var_com, names.arg = names(var_com), cex.names = 0.5, las=2, main = "Diferencia entre Altas y Bajas", xlab = "Categorías", ylab = "Diferencia")
 ```
 
-A continuación, estudiaremos el flujo migratorio según el tamaño de los municipios para valorar el éxodo rural.
-
-
-
 ## Análisis bivariante
 
 ### Numérica - Numérica
 
-Debido a que en el conjunto de datos actual, únicamente poseemos una variable numérica, decidimos recuperar la variable ANONAc, la cual debería tener una gran correlación con la variable EDAD.
-```{r}
-# Si estás utilizando el paquete dplyr y el conjunto de datos se llama "datos"
-library(dplyr)
-bivar <- data %>%
-  select(ANONAC, EDAD)
+La variable ANONAC debería tener una gran correlación con la variable EDAD.
+
+```{r, include = F}
+bivar <- data_df %>%
+  dplyr::select(ANONAC, EDAD) %>%
+  na.omit()
 
 pairs(bivar)
 ```
+
 Efectivamente, como era de suponer, obtenemos que las dos variables están correlacionadas totalmente, ya que EDAD= 2021 - ANONAC.
 
 ```{r}
@@ -372,12 +348,12 @@ cor_spearman <- cor(bivar, method= 'spearman', use='complete.obs')
 
 print(cor_spearman)
 ```
-La correlación de Pearson sirve para cuando la relación entre dos variables es lineal, mientras que la de Spearman es robusta frente a relaciones no lineales en datos ordenados.
-Por esta razón, ambas correlaciones son iguales, ya que la relación entre ambas variables es lineal.
 
-### Nméricas- Categóricas
+La correlación de Pearson sirve para cuando la relación entre dos variables es lineal, mientras que la de Spearman es robusta frente a relaciones no lineales en datos ordenados. Por esta razón, ambas correlaciones son iguales, ya que la relación entre ambas variables es lineal.
 
-Seguidamente, utilizando la librería ggplot vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
+### Numéricas- Categóricas
+
+Seguidamente, utilizando la librería `ggplot` vamos a representar un histograma de edades por sexo, ya que queremos conocer la edad a la cual la gente suele cambiar de residencia y si existe alguna diferencia significativa entre hombres y mujeres a la hora de tomar esta decisión.
 
 ```{r}
 histograma <- ggplot(data_df, aes(x=EDAD, fill=SEXO)) +
@@ -391,8 +367,7 @@ histograma <- ggplot(data_df, aes(x=EDAD, fill=SEXO)) +
 print(histograma)
 ```
 
-
-Tras observar esta gráfica, se observa que la gente cambia más de residencia alrededor de los 30 años, lo cual tiene sentido, ya que es la etapa de la vida en la que muchas personas deciden independizarse o formar una nueva familia.
+En esta gráfica, se observa que la gente cambia más de residencia alrededor de los 30 años, lo cual tiene sentido, ya que es la etapa de la vida en la que muchas personas deciden independizarse o formar una nueva familia.
 
 Si queremos estudiar ambas colas, un detalle importante a tener en cuenta y que está apoyado científicamente es que las mujeres viven más de media que los hombres y lo podemos observar a edades tardías, ya que hay una diferencia significativa entre hombres y mujeres a esa edad. Por otra parte, también se observa que tras el nacimiento de los hijos o en muchas ocasiones del segundo hijo de la pareja, las familias suelen tomar la decisión de mudarse a un hogar más amplio.
 
@@ -409,9 +384,11 @@ ggplot(data_df, aes(x = SEXO, y = EDAD, fill = SEXO)) +
   labs(title = "Boxplot of EDAD by SEXO", x = "SEXO", y = "EDAD")
 
 ```
+
 Por tanto, rechazamos la hipótesis nula de que las medias de edad de los hombres y las mujeres es la misma.
 
 ### Categóricas - Categóricas
+
 Para seguir con el estudio del éxodo rural, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera:
 
 | Código en el mosaico | Descripción |
@@ -420,7 +397,7 @@ Para seguir con el estudio del éxodo rural, podemos representar la relación en
 | tam_2 | Municipio no capital de 10.001 a 20.000 |
 | tam_3 | Municipio no capital de 20.001 a 50.000 |
 | tam_4 | Municipio no capital de 50.001 a 100.000 |
-| ntam_5 | Municipio no capital  de más de 100.000 |
+| tam_5 | Municipio no capital  de más de 100.000 |
 | capital | Municipio capital de provincia |
 
 ```{r mosaic-tamu}
@@ -447,6 +424,58 @@ ggplot(mosaic_df) +
   guides(fill = "none")
 ```
 
+Para complementar este análisis, transformamos nuestros datos a fin de obtener un `data.frame` con la siguiente estructura:
+
+ - **MUNI**: contiene todos los valores únicos de las variables **MUNIALTA** y **MUNIBAJA**.
+
+ - **TAMU**: valor correspondiente de **TAMUALTA** / **TAMUBAJA**.
+ 
+ - **isCAPITAL**: valor lógico que indica si el municipio es capital.
+ 
+ - **EDAD**: media de la edad de los desplazados desde ó hasta cada municipio.
+ 
+ - **MES**: moda del mes en el que se producen los movimientos desde ó hasta cada municipio.
+ 
+ - **nBAJAS**: número de bajas en cada municipio.
+ 
+ - **nALTAS**: número de bajas en cada municipio.
+ 
+Las variables adicionales **nTOTAL** y **nNETO** son la suma y la diferencia de las últimas dos variables listadas.
+
+```{r rearrange-muni}
+muni_df <- rearrange_muni_data(data_df)
+```
+
+Ahora podemos realizar diferentes representaciones sobre este nuevo dataset transformado.
+
+```{r}
+# muni_df <- muni_df %>%
+#   dplyr::select(-MES)
+
+muni_df %>%
+  na.omit()%>%
+  filter(TAMU != "Municipio capital de provincia") %>%
+  ggplot(aes(y = nNETO, color = TAMU)) +
+  geom_boxplot() +
+  labs(
+    y = "desplazamientos netos",
+    title = "Número de desplazamientos netos en función del tamaño")
+
+muni_df %>%
+  na.omit()%>%
+  ggplot(aes(x = isCAPITAL, y = nNETO, fill = isCAPITAL)) +
+  geom_violin() +
+  labs(
+    y = "desplazamientos netos",
+    title = "Número de desplazamientos netos en función de isCAPITAL")
+```
+
+Como cabía esperar, el número las variaciones residenciales netas de los municipios más grandes es más elevado, esto es, sí observamos un cierto grado de centralización por el cual un gran número de personas se desplaza hacia las ciudades más grandes.
+
+## Análisis interactivo: mapas
+
+Empleamos la librería `leaflet` para crear mapas interactivos sobre los que representamos algunos de los resultados obtenidos en el análisis. En este documento se expone una imagen fija de uno de ellos. Para poder consultar los mapas en su totalidad, ejecute el documento `ProyectoAED2023.Rmd`.
+
 ```{r plot-countries, eval = F}
 country_data <- get_net_country_movements(data_df)
 dict_countries <- get_country_location(fileDir = "./data/country_locations.RData")
@@ -464,67 +493,60 @@ residence_variations_map
 
 ### Características
 
-
 ```{r}
 tablacontingencia1 <- table(data_df$COMUBAJA, data_df$COMUALTA)
 chitest1 <- chisq.test(tablacontingencia1, correct = FALSE)
 print(chitest1)
 ```
+
 Por tanto, rechazamos la hipótesis nula.
 
 ## Análisis de outliers y datos faltantes
 
-Respecto a los valores NA, hemos decidido no imputar ningún valor faltante, ya que consideramos que nuestra muestra es suficientemente grande como para poder trabajar sin dichos valores y tampoco queremos introducir datos que modifiquen las características de nuestro conjunto de datos.
+Respecto a los valores NA, hemos decidido no imputar ningún valor faltante, ya que consideramos que nuestra muestra es suficientemente grande como para poder trabajar sin dichos valores y es preferible introducir datos que modifiquen las características de nuestro conjunto de datos.
 
 Respecto a los outliers, únicamente hemos encontrado en la variable EDAD aunque no se pueden considerar valores imposibles, puesto que una persona puede vivir 110 años.
 
 ```{r}
-library(dplyr)
-library(tidyr)
-
 outliers <- data_df %>%
-  select(EDAD) %>%
+  dplyr::select(EDAD) %>%
   summarise(Media=mean(EDAD), Mediana=median(EDAD), IQR=IQR(EDAD), Q1 = quantile(EDAD,0.25),Q3 = quantile(EDAD, 0.75),
 ValorMinBoxplot= quantile(EDAD,0.25)-1.5*IQR(EDAD),           
 ValorMaxBoxplot=quantile(EDAD,0.75)+1.5*IQR(EDAD) )
-
-print(outliers)
+outliers
 
 resumen <- outliers %>%
-  unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ") %>%
-print(resumen)
+  unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ")
+resumen
 
 valorescriticos<- data_df %>%
   filter(EDAD > 81.5) %>%
   count()
-
-print(valorescriticos)
+valorescriticos
 
 outliers <- data_df %>%
   group_by(SEXO) %>%
-  select(EDAD) %>%
+  dplyr::select(EDAD) %>%
   summarise(Media=mean(EDAD), Mediana=median(EDAD), IQR=IQR(EDAD), Q1 = quantile(EDAD,0.25),Q3 = quantile(EDAD, 0.75),
 ValorMinBoxplot= quantile(EDAD,0.25)-1.5*IQR(EDAD),           
 ValorMaxBoxplot=quantile(EDAD,0.75)+1.5*IQR(EDAD) )
-
-print(outliers)
+outliers
 
 resumen <- outliers %>%
-  unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ") %>%
-print(resumen)
+  unite(intervalo, ValorMinBoxplot, ValorMaxBoxplot, sep = " - ")
+resumen
 
 valorescriticos<- data_df %>%
   group_by(SEXO) %>%
   filter(SEXO=='Mujer',EDAD > 85.5) %>%
   count()
-
-print(valorescriticos)
+valorescriticos
 
 valorescriticos<- data_df %>%
   group_by(SEXO) %>%
   filter(SEXO=='Hombre',EDAD > 81.5) %>%
   count()
-
-print(valorescriticos)
+valorescriticos
 ```
 
+# Conclusiones finales

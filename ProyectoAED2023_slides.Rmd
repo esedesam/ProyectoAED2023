@@ -94,3 +94,92 @@ metadata
 ```
 <font size="1">
 
+## Preprocesado
+
+Como primera comprobación, nos aseguramos de que todas las entradas de los datos crudos tienen la longitud adecuada. Este valor está definido en la tabla de metadatos.
+
+```{r}
+data_file <- "./data/md_EVR_2021.txt"
+raw_data <- readLines(data_file, encoding = "UTF-8")
+entry_length <- metadata$Longitud[metadata$Variable == "TOTAL"]
+
+filtered_raw_data <- raw_data[nchar(raw_data) == entry_length]
+
+# No necesitamos la última entrada para nada más
+vars_table <- metadata[metadata$Variable != "TOTAL", ]
+
+vars_table
+```
+
+
+## Creación del dataframe
+
+Una vez nos hemos asegurado de que todas las entradas tienen la longitud correcta, dividimos cada una de ellas en distintas variables de un `data.frame` a partir de las posiciones y longitudes definidas en los metadatos.
+
+```{r split-data}
+raw_data_df <- split_raw_data(filtered_raw_data, vars_table)
+raw_data_df
+```
+
+## Obtención de los diccionarios
+
+A continuación, extraemos de los ficheros adicionales la información necesaria para interpretar los códigos de los datos crudos. Generamos dos variables:
+
+ - `dict_list`
+ 
+ - `dict_info`
+
+```{r get-dicts}
+dict_list <- create_dict_list(vars_table)
+dict_info <- get_dict_from_sheets(dict_list, sheet_list, municipios_data)
+```
+
+## Conversión variables
+
+El último paso del preprocesado del dataset es la conversión de las variables para al formato adecuado. Está indicado en los metadatos, donde figuran dos tipos:
+
+ - N: numérico -> `numeric`
+ - A: alfanumérico -> `factor`
+
+```{r convert-num}
+data_df <- convert_numeric_vars(data_df, vars_table)
+```
+
+# Análisis estadístico
+
+## Datos faltantes
+
+En los resúmenes mostrados podemos observamos que las variables de municipio y tamaño contienen numerosos valores faltantes. Además, en algunas de las variables categóricas, aparecen niveles cuyo significado es equivalente a un dato faltante de cara al análisis: "No Consta", "Other", "Baja por Caducidad".
+
+### Categóricas - Categóricas
+
+Para seguir con el estudio del éxodo rural, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera:
+
+| Código en el mosaico | Descripción |
+| -:- | -:- |
+| tam_1 | Municipio no capital hasta 10.000 habitantes |
+| tam_2 | Municipio no capital de 10.001 a 20.000 |
+| tam_3 | Municipio no capital de 20.001 a 50.000 |
+| tam_4 | Municipio no capital de 50.001 a 100.000 |
+| tam_5 | Municipio no capital  de más de 100.000 |
+| capital | Municipio capital de provincia |
+
+Para complementar este análisis, transformamos nuestros datos a fin de obtener un `data.frame` con la siguiente estructura:
+
+ - **MUNI**: contiene todos los valores únicos de las variables **MUNIALTA** y **MUNIBAJA**.
+
+ - **TAMU**: valor correspondiente de **TAMUALTA** / **TAMUBAJA**.
+ 
+ - **isCAPITAL**: valor lógico que indica si el municipio es capital.
+ 
+ - **EDAD**: media de la edad de los desplazados desde ó hasta cada municipio.
+ 
+ - **MES**: moda del mes en el que se producen los movimientos desde ó hasta cada municipio.
+ 
+ - **nBAJAS**: número de bajas en cada municipio.
+ 
+ - **nALTAS**: número de bajas en cada municipio.
+ 
+Las variables adicionales **nTOTAL** y **nNETO** son la suma y la diferencia de las últimas dos variables listadas.
+
+## Análisis interactivo: mapas

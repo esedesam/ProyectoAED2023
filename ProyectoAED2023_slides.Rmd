@@ -35,6 +35,10 @@ slides > slide:not(.nobackground):before {
   height: 60px;
   background-size: 300px 60px;
 }
+
+css selector {
+font-size: 12px;
+}
 ```
 
 ```{r setup, include=FALSE}
@@ -46,11 +50,15 @@ if (!require(pacman)) {
   library(pacman)
 }
 pacman::p_load(imager, readxl, kableExtra)
+```
+
+```{r dependencies, include=FALSE}
 source("ProyectoAED2023_library.R")
 load(file = "./data_for_slides/data.RData")
 load(file = "./data_for_slides/data_map.RData")
 load(file = "./data_for_slides/outliers.RData")
 load(file = "./data_for_slides/chi.RData")
+load(file = "./data_for_slides/full_df.RData")
 ```
 
 # Inspección de los datos
@@ -128,7 +136,7 @@ dict_list[5]
  
  - `dict_info`: diccionario completo con todos los códigos y descripciones.
  
- <font size="1">
+<font size="1">
 ```{r}
 dict_info
 ```
@@ -144,19 +152,17 @@ dict_info
   }
 </style>
 
- - Aplicamos los diccionarios y convertimos las variables para al formato adecuado, indicado en los metadatos. Figuran dos tipos: N (numérico) -> `numeric` y A (alfanumérico) -> `factor`.
+Aplicamos los diccionarios y convertimos las variables para al formato adecuado, indicado en los metadatos. Figuran dos tipos: N (numérico) -> `numeric` y A (alfanumérico) -> `factor`.
  
- - Creamos nuevas variables categóricas: **COMUBAJA**, **COMUALTA**, **COMUNAC**.
+Creamos nuevas variables categóricas: **COMUBAJA**, **COMUALTA**, **COMUNAC**.
 
- <font size="1">
+<font size="1">
 ```{r data_df}
 data_df
 ```
 </font>
 
- - Analizamos los NAs introducidos:
-
- <font size="1">
+<font size="1">
 ```{r nas}
 na_summary
 ```
@@ -164,46 +170,73 @@ na_summary
 
 # Análisis estadístico
 
-## Resumen del dataset
+## Resumen del dataset {#res}
 
-En primer lugar, realizamos un `summary()` para obtener la información esencial de cada variable.
+<style>
+  #res > p {      
+    margin-top: -30px;     
+  }
+</style>
 
-Seguidamente, observamos el tipo de cada variable para confirmar que estén en el formato adecuado empleando la función `str()`.
+Exploramos la información esencial y el tipo de cada variable para confirmar que estén en el formato adecuado empleando la función `str()`.
 
+<font size="1">
 ```{r str-data}
 str(data_df)
 ```
+</font>
 
 Eliminamos las siguientes variables de nuestro conjunto de datos: **MESNAC**, **ANOVAR**, **MESVAR**.
  
-## Datos faltantes
+## Datos faltantes {#nas}
 
-En los resúmenes mostrados podemos observamos que las variables de municipio y tamaño contienen numerosos valores faltantes. Además, en algunas de las variables categóricas, aparecen niveles cuyo significado es equivalente a un dato faltante de cara al análisis: "No Consta", "Other", "Baja por Caducidad".
+<style>
+  #nas > p {      
+    margin-top: -20px;     
+  }
+</style>
+
+Si realizamos un `summary()`, podemos observamos que las variables de municipio y tamaño contienen numerosos valores faltantes. En algunas de las variables categóricas, aparecen niveles cuyo significado es equivalente a un dato faltante de cara al análisis: "No Consta", "(Other)", "Baja por Caducidad".
+
+```{r}
+plot_file <- "./figure/summary.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
 
 ## Análisis Univariante: Numéricas
 
-```{r}
+```{r, fig.align = 'center'}
 plot_file <- "./figure/boxplot_edad.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
-```{r}
-par(mfrow=c(1,2))
+## Análisis Univariante: Numéricas
+
+<div class="columns-2">
+
+```{r, fig.width = 5, fig.height = 4}
 plot_file <- "./figure/descdist_edad.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
+```
+
+```{r, fig.width = 5, fig.height = 4}
 plot_file <- "./figure/descdist_mesvar.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
+</div>
+
 ## Aproximación normal
 
-```{r qqplot}
+```{r qqplot, fig.align = 'center'}
 plot_file <- "./figure/qqplot_edad.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
@@ -212,7 +245,7 @@ plot(img, axes = FALSE)
 
 ## Movimiento entre comunidades
 
-```{r}
+```{r, fig.align = 'center'}
 plot_file <- "./figure/barplot_diffs.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
@@ -223,7 +256,7 @@ plot(img, axes = FALSE)
 
 La variable **ANONAC** debería tener una gran correlación con la variable **EDAD**.
 
-```{r bivar-anonac-edad1}
+```{r bivar-anonac-edad1, fig.align = 'center'}
 plot_file <- "./figure/pairs_anonac_edad.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
@@ -232,16 +265,18 @@ plot(img, axes = FALSE)
 
 $EDAD = 2021 - ANONAC$
 
-### Análisis bivariante: Numéricas- Categóricas
+## Análisis bivariante: Numéricas - Categóricas
 
-```{r hist-num-cat}
+```{r hist-num-cat, fig.align = 'center'}
 plot_file <- "./figure/hist_edad_sexo.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
-```{r boxplot-sexo}
+## Análisis bivariante: Numéricas - Categóricas
+
+```{r boxplot-sexo, fig.align = 'center', , fig.width = 4, fig.height = 2.5}
 mujeres <- filter(data_df, SEXO == "Mujer")
 hombres <- filter(data_df, SEXO=='Hombre')
 t.test(mujeres$EDAD,hombres$EDAD)
@@ -261,7 +296,7 @@ plot(img, axes = FALSE)
 
 Para seguir con el estudio del éxodo rural, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera.
 
-```{r}
+```{r, fig.align = 'center'}
 plot_file <- "./figure/mosaic_tamu.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
@@ -316,7 +351,7 @@ plot(img, axes = FALSE)
 
 ## Análisis interactivo: mapas
 
-```{r plot-mapa, message = F}
+```{r plot-mapa, message = F, fig.align = 'center'}
 residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, selected_prov)
 residence_variations_map
 ```

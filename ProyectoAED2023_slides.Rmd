@@ -130,6 +130,13 @@ A continuación, extraemos de los ficheros adicionales la información necesaria
  - `dict_info`
 
 ```{r get-dicts}
+excel_dict_file <- "./data/dr_EVR_2021.xlsx"
+sheet_list <- load_excel_dicts(excel_dict_file)
+main_sheet <- "Diseño"
+municipios_file <- "./data/diccionario21.xlsx"
+
+municipios_data <- read_excel(municipios_file, skip = 1,
+                                  col_names = TRUE)
 dict_list <- create_dict_list(vars_table)
 dict_info <- get_dict_from_sheets(dict_list, sheet_list, municipios_data)
 ```
@@ -142,14 +149,113 @@ El último paso del preprocesado del dataset es la conversión de las variables 
  - A: alfanumérico -> `factor`
 
 ```{r convert-num}
+data_df <- apply_dict_to_data(raw_data_df, dict_info, dict_list)
 data_df <- convert_numeric_vars(data_df, vars_table)
 ```
 
-# Análisis estadístico
+# Análisis de las variables
+
+## Resumen del dataset
+
+En primer lugar, realizamos un `summary()` para obtener la información esencial de cada variable.
+
+Seguidamente, observamos el tipo de cada variable para confirmar que estén en el formato adecuado empleando la función `str()`.
+
+```{r str-data}
+str(data_df)
+```
+
+Eliminamos las siguientes variables de nuestro conjunto de datos:
+
+ - **MESNAC**
+
+ - **ANOVAR**
+ 
+ - **MESVAR**
+ 
+ Creamos nuevas variables que contienen las comunidades autónomas.
+
 
 ## Datos faltantes
 
 En los resúmenes mostrados podemos observamos que las variables de municipio y tamaño contienen numerosos valores faltantes. Además, en algunas de las variables categóricas, aparecen niveles cuyo significado es equivalente a un dato faltante de cara al análisis: "No Consta", "Other", "Baja por Caducidad".
+
+# Análisis Univariante
+
+## Numéricas
+
+```{r}
+plot_file <- "./figure/boxplot_edad.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot_file <- "./figure/descdist_edad.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+
+plot_file <- "./figure/descdist_mesvar.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+## Aproximación normal
+
+```{r qqplot}
+plot_file <- "./figure/qqplot_edad.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+## Movimiento entre comunidades
+
+```{r}
+plot_file <- "./figure/barplot_diffs.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+## Análisis bivariante
+
+### Numérica - Numérica
+
+La variable **ANONAC** debería tener una gran correlación con la variable **EDAD**.
+
+```{r bivar-anonac-edad1}
+plot_file <- "./figure/pairs_anonac_edad.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+$EDAD = 2021 - ANONAC$
+
+### Numéricas- Categóricas
+
+```{r hist-num-cat}
+plot_file <- "./figure/hist_edad_sexo.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+```{r boxplot-sexo}
+mujeres <- filter(data_df, SEXO == "Mujer")
+hombres <- filter(data_df, SEXO=='Hombre')
+
+t.test(mujeres$EDAD,hombres$EDAD)
+
+plot_file <- "./figure/boxplot_edad_sexo.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
 
 ### Categóricas - Categóricas
 
@@ -183,3 +289,27 @@ Para complementar este análisis, transformamos nuestros datos a fin de obtener 
 Las variables adicionales **nTOTAL** y **nNETO** son la suma y la diferencia de las últimas dos variables listadas.
 
 ## Análisis interactivo: mapas
+
+### Características
+
+Se usa el test Chi-cuadrado. Este test supone una hipótesis de partida $H_0$ (Son independientes) y dependiendo del resultado del
+test, se acepta o no:
+
+p<0.05: Rechazamos hipótesis
+p \(\geq\) 0.05: Aceptamos Ho
+
+```{r chisq-comu}
+tablacontingencia1 <- table(data_df$COMUBAJA, data_df$COMUALTA)
+chitest1 <- chisq.test(tablacontingencia1, correct = FALSE)
+print(chitest1)
+```
+
+## Análisis de outliers
+
+```{r}
+outliers <- detect_outliers(data_df$EDAD)
+outliers
+```
+
+
+

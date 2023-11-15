@@ -132,7 +132,13 @@ dict_info
  
 </div>
 
-## Aplicación de diccionarios y cambio de clase
+## Aplicación de diccionarios y cambio de clase {#apply-dict}
+
+<style>
+  #apply-dict > p {      
+    margin-top: -20px;     
+  }
+</style>
 
  - Aplicamos los diccionarios y convertimos las variables para al formato adecuado, indicado en los metadatos. Figuran dos tipos: N (numérico) -> `numeric` y A (alfanumérico) -> `factor`.
  
@@ -241,18 +247,30 @@ par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
-## Análisis bivariante: Categóricas - Categóricas
+## Análisis bivariante: Categóricas - Categóricas {#cat-cat1}
 
-Para seguir con el estudio del éxodo rural, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera:
+<style>
+  #cat-cat1 > p {      
+    margin-top: -20px;     
+  }
+</style>
 
-| Código en el mosaico | Descripción |
-| -:- | -:- |
-| tam_1 | Municipio no capital hasta 10.000 habitantes |
-| tam_2 | Municipio no capital de 10.001 a 20.000 |
-| tam_3 | Municipio no capital de 20.001 a 50.000 |
-| tam_4 | Municipio no capital de 50.001 a 100.000 |
-| tam_5 | Municipio no capital  de más de 100.000 |
-| capital | Municipio capital de provincia |
+Para seguir con el estudio del éxodo rural, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera.
+
+```{r}
+plot_file <- "./figure/mosaic_tamu.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+## Análisis bivariante: Categóricas - Categóricas {#cat-cat2}
+
+<style>
+  #cat-cat2 > p {      
+    margin-top: -20px;     
+  }
+</style>
 
 Para complementar este análisis, transformamos nuestros datos a fin de obtener un `data.frame` con la siguiente estructura:
 
@@ -272,7 +290,33 @@ Para complementar este análisis, transformamos nuestros datos a fin de obtener 
  
 Las variables adicionales **nTOTAL** y **nNETO** son la suma y la diferencia de las últimas dos variables listadas.
 
+## Análisis bivariante: Categóricas - Categóricas {#cat-cat3}
+
+<div class="columns-2">
+
+```{r}
+plot_file <- "./figure/mosaic_tamu.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+```{r}
+plot_file <- "./figure/mosaic_tamu.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+</div>
 ## Análisis interactivo: mapas
+
+```{r plot-countries}
+country_data <- get_net_country_movements(data_df)
+dict_countries <- get_country_location(fileDir = "./data/country_locations.RData")
+countries_map <- plot_countries_map(country_data, dict_countries)
+countries_map
+```
 
 ## Características
 

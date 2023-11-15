@@ -484,14 +484,12 @@ Por tanto, rechazamos la hipótesis nula de que las medias de edad de los hombre
 
 Para seguir con el estudio del éxodo rural, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera:
 
-| Código en el mosaico | Descripción |
-| -:- | -:- |
-| tam_1 | Municipio no capital hasta 10.000 habitantes |
-| tam_2 | Municipio no capital de 10.001 a 20.000 |
-| tam_3 | Municipio no capital de 20.001 a 50.000 |
-| tam_4 | Municipio no capital de 50.001 a 100.000 |
-| tam_5 | Municipio no capital  de más de 100.000 |
-| capital | Municipio capital de provincia |
+ - tam_1: Municipio no capital hasta 10.000 habitantes
+ - tam_2: Municipio no capital de 10.001 a 20.000
+ - tam_3: Municipio no capital de 20.001 a 50.000
+ - tam_4: Municipio no capital de 50.001 a 100.000
+ - tam_5: Municipio no capital  de más de 100.000
+ - capital: Municipio capital de provincia
 
 ```{r mosaic-tamu}
 mosaic_df <- data_df[
@@ -603,7 +601,7 @@ countries_map
 ```
 
 ```{r plot-prov, eval = F}
-selected_prov <- "Palencia"
+selected_prov <- "Valencia/València"
 prov_data <- get_net_prov_movements(data_df, selected_prov)
 dict_prov <- get_prov_location(fileDir = "./data/prov_locations.RData")
 residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, selected_prov)

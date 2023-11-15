@@ -614,6 +614,12 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
   
   for (i in 1 : nrow(line_data)) {
     
+    if (line_data$value[i] > 0) {
+      this_group <- "Inmigraciones"
+    } else {
+      this_group <- "Emigraciones"
+    }
+    
     residence_variations_map <- residence_variations_map %>%
       addArrowhead(
         data = line_data[i, ],
@@ -624,9 +630,8 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
         popup = ~value,
         options = arrowheadOptions(
           yawn = 45,
-          size = "10000m"
-        ),
-        group = "Variaciones residenciales")
+          size = "10000m"),
+        group = this_group)
   }
   
   residence_variations_map <- residence_variations_map %>%
@@ -637,7 +642,7 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
       position = "bottomright",
       group = "Variaciones residenciales") %>%
     addLayersControl(
-      overlayGroups = c("Provincias", "Provincia seleccionada", "Variaciones residenciales")) %>%
+      overlayGroups = c("Provincias", "Provincia seleccionada", "Inmigraciones", "Emigraciones")) %>%
     addScaleBar(
       position = "bottomleft")
   

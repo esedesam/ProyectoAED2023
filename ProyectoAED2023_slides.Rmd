@@ -1,5 +1,6 @@
 ---
 title: "Estudio de las variaciones residenciales en España en 2021"
+subtitle: Análisis Exploratorio de Datos
 author: Javier Hinarejos & Samuel Ortega
 date: 13-11-2023
 output:
@@ -47,6 +48,8 @@ if (!require(pacman)) {
 pacman::p_load(imager, readxl, kableExtra)
 source("ProyectoAED2023_library.R")
 load(file = "./data_for_slides/data.RData")
+load(file = "./data_for_slides/data_map.RData")
+load(file = "./data_for_slides/outliers.RData")
 ```
 
 # Inspección de los datos
@@ -294,28 +297,27 @@ Las variables adicionales **nTOTAL** y **nNETO** son la suma y la diferencia de 
 
 <div class="columns-2">
 
-```{r}
-plot_file <- "./figure/mosaic_tamu.jpg"
+```{r, fig.width = 5, fig.height = 4}
+plot_file <- "./figure/boxplot_tamu.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
-```{r}
-plot_file <- "./figure/mosaic_tamu.jpg"
+```{r, fig.width = 5, fig.height = 4}
+plot_file <- "./figure/boxplot_capital.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
 </div>
+
 ## Análisis interactivo: mapas
 
-```{r plot-countries}
-country_data <- get_net_country_movements(data_df)
-dict_countries <- get_country_location(fileDir = "./data/country_locations.RData")
-countries_map <- plot_countries_map(country_data, dict_countries)
-countries_map
+```{r plot-mapa, message = F}
+residence_variations_map <- plot_residence_variation_map(prov_data, dict_prov, selected_prov)
+residence_variations_map
 ```
 
 ## Características
@@ -335,6 +337,5 @@ print(chitest1)
 ## Análisis de outliers
 
 ```{r}
-outliers <- detect_outliers(data_df$EDAD)
 outliers
 ```

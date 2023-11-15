@@ -82,6 +82,16 @@ par(mar = c(0, 0, 1, 0))
 plot(img, axes = FALSE)
 ```
 
+## Preguntas planteadas
+
+ - ¿Se concentran las variaciones residenciales durante alguna época concreta del año?
+ 
+ - ¿Hay alguna dependencia de la cantidad de variaciones residenciales con la edad? Si es así, ¿depende también de la edad?
+ 
+ - ¿Cómo es la tasa de migración de España con el extranjero?
+ 
+ - ¿Hay una relación significativa entre el tamaño de los municipios y el número de variaciones que se producen en ellos? ¿Es el éxodo rural un problema actual?
+
 ## Previsualización del fichero principal
 
 La información está almacenada en el fichero en filas de longitud fija.

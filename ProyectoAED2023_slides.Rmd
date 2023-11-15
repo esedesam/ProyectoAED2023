@@ -50,6 +50,7 @@ source("ProyectoAED2023_library.R")
 load(file = "./data_for_slides/data.RData")
 load(file = "./data_for_slides/data_map.RData")
 load(file = "./data_for_slides/outliers.RData")
+load(file = "./data_for_slides/chi.RData")
 ```
 
 # Inspección de los datos
@@ -328,14 +329,31 @@ test, se acepta o no:
 p<0.05: Rechazamos hipótesis
 p \(\geq\) 0.05: Aceptamos Ho
 
+Lo aplicamos a las variables **COMUALTA** y **COMUBAJA**.
+
 ```{r chisq-comu}
-tablacontingencia1 <- table(data_df$COMUBAJA, data_df$COMUALTA)
-chitest1 <- chisq.test(tablacontingencia1, correct = FALSE)
 print(chitest1)
 ```
 
 ## Análisis de outliers
 
+Realizamos un análisis de la variable numérica **EDAD** de los outliers.
+
 ```{r}
 outliers
 ```
+
+ - Los métodos percentil (5%-95%), 3-sigma y boxplot asumen que la distribución es gaussiana. 3-sigma es el menos exigente.
+ - El método hampel no asume distribución gaussiana.
+ 
+# Conclusiones
+
+## Conclusiones
+
+Podemos afirmar que, durante el año 2021 en España, las variaciones residenciales no presentaron ninguna dependencia significativa con la época del año. Por otra parte, sí observamos que la edad es un factor importante en cuanto al cambio de residencia: hay un máximo absoluto en torno a los 35 años, que es coherente con la edad de independización definitiva de muchas familias. También concluimos que esta relación no es independiente del sexo.
+
+La tasa de migración de España con el extranjero durante el año estudiado es positiva y de valor elevado. Sin embargo, este resultado puede estar influido por la amplia cantidad de variaciones de salida codificadas como "Baja por Caducidad".
+
+Por último, observamos que gran cantidad de las variaciones residenciales se producen entre municipios pequeños, pero no suponen un desplazamiento neto elevado. No obstante, en las ciudades más grandes la tasa neta de variaciones residenciales es mucho más grande, lo cual es un indicio del proceso de centralización actual.
+
+En conclusión, hemos logrado importar, procesar, interpretar y analizar el dataset propuesto. Para ello, hemos hecho uso de numerosas funciones y librerías que nos han permitido realizar este proyecto de manera eficiente y obtener las conclusiones descritas.

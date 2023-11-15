@@ -46,6 +46,7 @@ if (!require(pacman)) {
 }
 pacman::p_load(imager, readxl, kableExtra)
 source("ProyectoAED2023_library.R")
+load(file = "./data_for_slides/data.RData")
 ```
 
 # Inspección de los datos
@@ -56,7 +57,7 @@ source("ProyectoAED2023_library.R")
   #obt-datos > p {      
     margin-top: -30px;     
   }
-  </style>
+</style>
   
 Base de microdatos del INE:
 
@@ -64,11 +65,10 @@ Base de microdatos del INE:
  - Diccionario de municipios (2021): [https://go.uv.es/saorme/ine-muni-2021](https://go.uv.es/saorme/ine-muni-2021).
 
 ```{r ine-img, fig.height = 4, fig.align="center"}
-myimg <- load.image("./figure/ine.png")
+img <- load.image("./figure/ine.png")
 par(mar = c(0, 0, 1, 0))
-plot(myimg, axes = FALSE)
+plot(img, axes = FALSE)
 ```
-
 
 ## Previsualización del fichero principal
 
@@ -80,7 +80,7 @@ raw_data_preview <- readLines('./data/md_EVR_2021.txt', n = 3)
 preview_df <- data.frame(linea = 1:length(raw_data_preview), contenido = raw_data_preview)
 preview_df
 ```
-<font size="1">
+</font>
 
 Interpretamos la información con el fichero de metadatos.
 
@@ -92,66 +92,156 @@ metadata <- read_excel(excel_dict_file, sheet = "Diseño",
 
 metadata
 ```
+</font>
+
+# Preprocesado
+
+## Comprobación de longitud y separación en variables
+
+ - Comprobar la longitud de las entradas crudas.
+ 
+ - Separar por variables.
+
 <font size="1">
-
-## Preprocesado
-
-Como primera comprobación, nos aseguramos de que todas las entradas de los datos crudos tienen la longitud adecuada. Este valor está definido en la tabla de metadatos.
-
 ```{r}
-data_file <- "./data/md_EVR_2021.txt"
-raw_data <- readLines(data_file, encoding = "UTF-8")
-entry_length <- metadata$Longitud[metadata$Variable == "TOTAL"]
-
-filtered_raw_data <- raw_data[nchar(raw_data) == entry_length]
-
-# No necesitamos la última entrada para nada más
-vars_table <- metadata[metadata$Variable != "TOTAL", ]
-
-vars_table
-```
-
-
-## Creación del dataframe
-
-Una vez nos hemos asegurado de que todas las entradas tienen la longitud correcta, dividimos cada una de ellas en distintas variables de un `data.frame` a partir de las posiciones y longitudes definidas en los metadatos.
-
-```{r split-data}
-raw_data_df <- split_raw_data(filtered_raw_data, vars_table)
 raw_data_df
 ```
+</font>
 
 ## Obtención de los diccionarios
 
 A continuación, extraemos de los ficheros adicionales la información necesaria para interpretar los códigos de los datos crudos. Generamos dos variables:
 
- - `dict_list`
+<div class="columns-2">
+
+ - `dict_list`: resumen de metadatos de los diccionarios.
  
- - `dict_info`
-
-```{r get-dicts}
-dict_list <- create_dict_list(vars_table)
-dict_info <- get_dict_from_sheets(dict_list, sheet_list, municipios_data)
+<font size="1">
+```{r}
+dict_list[5]
 ```
-
-## Conversión variables
-
-El último paso del preprocesado del dataset es la conversión de las variables para al formato adecuado. Está indicado en los metadatos, donde figuran dos tipos:
-
- - N: numérico -> `numeric`
- - A: alfanumérico -> `factor`
-
-```{r convert-num}
-data_df <- convert_numeric_vars(data_df, vars_table)
+</font>
+ 
+ - `dict_info`: diccionario completo con todos los códigos y descripciones.
+ 
+ <font size="1">
+```{r}
+dict_info
 ```
+</font>
+ 
+</div>
+
+## Aplicación de diccionarios y cambio de clase
+
+ - Aplicamos los diccionarios y convertimos las variables para al formato adecuado, indicado en los metadatos. Figuran dos tipos: N (numérico) -> `numeric` y A (alfanumérico) -> `factor`.
+ 
+ - Creamos nuevas variables categóricas: **COMUBAJA**, **COMUALTA**, **COMUNAC**.
+
+ <font size="1">
+```{r data_df}
+data_df
+```
+</font>
+
+ - Analizamos los NAs introducidos:
+
+ <font size="1">
+```{r nas}
+na_summary
+```
+</font>
 
 # Análisis estadístico
 
+## Resumen del dataset
+
+En primer lugar, realizamos un `summary()` para obtener la información esencial de cada variable.
+
+Seguidamente, observamos el tipo de cada variable para confirmar que estén en el formato adecuado empleando la función `str()`.
+
+```{r str-data}
+str(data_df)
+```
+
+Eliminamos las siguientes variables de nuestro conjunto de datos: **MESNAC**, **ANOVAR**, **MESVAR**.
+ 
 ## Datos faltantes
 
 En los resúmenes mostrados podemos observamos que las variables de municipio y tamaño contienen numerosos valores faltantes. Además, en algunas de las variables categóricas, aparecen niveles cuyo significado es equivalente a un dato faltante de cara al análisis: "No Consta", "Other", "Baja por Caducidad".
 
-### Categóricas - Categóricas
+## Análisis Univariante: Numéricas
+
+```{r}
+plot_file <- "./figure/boxplot_edad.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+```{r}
+par(mfrow=c(1,2))
+plot_file <- "./figure/descdist_edad.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+plot_file <- "./figure/descdist_mesvar.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+## Aproximación normal
+
+```{r qqplot}
+plot_file <- "./figure/qqplot_edad.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+## Movimiento entre comunidades
+
+```{r}
+plot_file <- "./figure/barplot_diffs.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+## Análisis bivariante: Numérica - Numérica
+
+La variable **ANONAC** debería tener una gran correlación con la variable **EDAD**.
+
+```{r bivar-anonac-edad1}
+plot_file <- "./figure/pairs_anonac_edad.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+$EDAD = 2021 - ANONAC$
+
+### Análisis bivariante: Numéricas- Categóricas
+
+```{r hist-num-cat}
+plot_file <- "./figure/hist_edad_sexo.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+```{r boxplot-sexo}
+mujeres <- filter(data_df, SEXO == "Mujer")
+hombres <- filter(data_df, SEXO=='Hombre')
+t.test(mujeres$EDAD,hombres$EDAD)
+plot_file <- "./figure/boxplot_edad_sexo.jpg"
+img <- load.image(plot_file)
+par(mar = c(0, 0, 0, 0))
+plot(img, axes = FALSE)
+```
+
+## Análisis bivariante: Categóricas - Categóricas
 
 Para seguir con el estudio del éxodo rural, podemos representar la relación entre el tamaño de los municipios de alta y de baja en un mosaico. Por limpieza, hemos recodificado las categorías de tamaño de la siguiente manera:
 
@@ -183,3 +273,24 @@ Para complementar este análisis, transformamos nuestros datos a fin de obtener 
 Las variables adicionales **nTOTAL** y **nNETO** son la suma y la diferencia de las últimas dos variables listadas.
 
 ## Análisis interactivo: mapas
+
+## Características
+
+Se usa el test Chi-cuadrado. Este test supone una hipótesis de partida $H_0$ (Son independientes) y dependiendo del resultado del
+test, se acepta o no:
+
+p<0.05: Rechazamos hipótesis
+p \(\geq\) 0.05: Aceptamos Ho
+
+```{r chisq-comu}
+tablacontingencia1 <- table(data_df$COMUBAJA, data_df$COMUALTA)
+chitest1 <- chisq.test(tablacontingencia1, correct = FALSE)
+print(chitest1)
+```
+
+## Análisis de outliers
+
+```{r}
+outliers <- detect_outliers(data_df$EDAD)
+outliers
+```

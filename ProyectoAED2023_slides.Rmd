@@ -108,7 +108,7 @@ metadata
 
 # Preprocesado
 
-## Comprobación de longitud y separación en variables
+## Separación en variables
 
  - Comprobar la longitud de las entradas crudas.
  
@@ -196,16 +196,18 @@ Eliminamos las siguientes variables de nuestro conjunto de datos: **MESNAC**, **
   }
 </style>
 
-Si realizamos un `summary()`, podemos observamos que las variables de municipio y tamaño contienen numerosos valores faltantes. En algunas de las variables categóricas, aparecen niveles cuyo significado es equivalente a un dato faltante de cara al análisis: "No Consta", "(Other)", "Baja por Caducidad".
+Llamamos a la función `summary()`. Observamos categorías cuyo significado es equivalente NA: "No Consta", "(Other)", "Baja por Caducidad".
 
-```{r}
-plot_file <- "./figure/summary.jpg"
+```{r, fig.align = 'left'}
+plot_file <- "./figure/str_data.png"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
 ## Análisis Univariante: Numéricas
+
+Representamos en un `boxplot` la variable numérica del dataset **EDAD**.
 
 ```{r, fig.align = 'center'}
 plot_file <- "./figure/boxplot_edad.jpg"
@@ -215,6 +217,8 @@ plot(img, axes = FALSE)
 ```
 
 ## Análisis Univariante: Numéricas
+
+Usamos la función `fitdistrplus::descdist()` para analizar la distribución de las variables numéricas.
 
 <div class="columns-2">
 
@@ -236,6 +240,8 @@ plot(img, axes = FALSE)
 
 ## Aproximación normal
 
+Comparamos la variable **EDAD** con una distribución normal.
+
 ```{r qqplot, fig.align = 'center'}
 plot_file <- "./figure/qqplot_edad.jpg"
 img <- load.image(plot_file)
@@ -245,6 +251,8 @@ plot(img, axes = FALSE)
 
 ## Movimiento entre comunidades
 
+Calculamos la variación neta en cada comunidad como la diferencia entre **COMUALTA** y **COMUBAJA**.
+
 ```{r, fig.align = 'center'}
 plot_file <- "./figure/barplot_diffs.jpg"
 img <- load.image(plot_file)
@@ -252,9 +260,15 @@ par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
-## Análisis bivariante: Numérica - Numérica
+## Análisis bivariante: Numérica - Numérica {#num-num}
 
-La variable **ANONAC** debería tener una gran correlación con la variable **EDAD**.
+<style>
+  #num-num > p {      
+    margin-top: -20px;     
+  }
+</style>
+
+La variable **ANONAC** debería tener una gran correlación con la variable **EDAD**: $EDAD = 2021 - ANONAC$
 
 ```{r bivar-anonac-edad1, fig.align = 'center'}
 plot_file <- "./figure/pairs_anonac_edad.jpg"
@@ -263,9 +277,10 @@ par(mar = c(0, 0, 0, 0))
 plot(img, axes = FALSE)
 ```
 
-$EDAD = 2021 - ANONAC$
-
 ## Análisis bivariante: Numéricas - Categóricas
+
+ - Máximo alrededor de los 35 años. Máximo local en edades más bajas.
+ - Cola superior de mayor tamaño en las mujeres.
 
 ```{r hist-num-cat, fig.align = 'center'}
 plot_file <- "./figure/hist_edad_sexo.jpg"
@@ -276,10 +291,15 @@ plot(img, axes = FALSE)
 
 ## Análisis bivariante: Numéricas - Categóricas
 
-```{r boxplot-sexo, fig.align = 'center', , fig.width = 4, fig.height = 2.5}
+Comparamos las distribuciones por sexo con un test T.
+
+```{r ttest-sexo, fig.align = 'center'}
 mujeres <- filter(data_df, SEXO == "Mujer")
 hombres <- filter(data_df, SEXO=='Hombre')
 t.test(mujeres$EDAD,hombres$EDAD)
+```
+
+```{r boxplot-sexo, fig.align = 'center', fig.width = 3, fig.height = 2.5}
 plot_file <- "./figure/boxplot_edad_sexo.jpg"
 img <- load.image(plot_file)
 par(mar = c(0, 0, 0, 0))
@@ -385,10 +405,14 @@ outliers
 
 ## Conclusiones
 
-Podemos afirmar que, durante el año 2021 en España, las variaciones residenciales no presentaron ninguna dependencia significativa con la época del año. Por otra parte, sí observamos que la edad es un factor importante en cuanto al cambio de residencia: hay un máximo absoluto en torno a los 35 años, que es coherente con la edad de independización definitiva de muchas familias. También concluimos que esta relación no es independiente del sexo.
-
-La tasa de migración de España con el extranjero durante el año estudiado es positiva y de valor elevado. Sin embargo, este resultado puede estar influido por la amplia cantidad de variaciones de salida codificadas como "Baja por Caducidad".
-
-Por último, observamos que gran cantidad de las variaciones residenciales se producen entre municipios pequeños, pero no suponen un desplazamiento neto elevado. No obstante, en las ciudades más grandes la tasa neta de variaciones residenciales es mucho más grande, lo cual es un indicio del proceso de centralización actual.
+ - No hay dependencia con la época del año.
+ 
+ - La edad es un factor importante en cuanto al cambio de residencia. También está influenciado por el sexo.
+ 
+ - La tasa de migración de España con el extranjero en 2021 es positiva y de valor elevado.
+ 
+ - Gran cantidad de las variaciones residenciales se producen entre municipios pequeños, pero no suponen un desplazamiento neto elevado
+ 
+ - En las ciudades más grandes la tasa neta de variaciones residenciales es mucho más grande.
 
 En conclusión, hemos logrado importar, procesar, interpretar y analizar el dataset propuesto. Para ello, hemos hecho uso de numerosas funciones y librerías que nos han permitido realizar este proyecto de manera eficiente y obtener las conclusiones descritas.

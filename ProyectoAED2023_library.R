@@ -615,9 +615,9 @@ plot_residence_variation_map <- function(prov_data, dict_prov, selected_prov) {
   for (i in 1 : nrow(line_data)) {
     
     if (line_data$value[i] > 0) {
-      this_group <- "Inmigraciones"
-    } else {
       this_group <- "Emigraciones"
+    } else {
+      this_group <- "Inmigraciones"
     }
     
     residence_variations_map <- residence_variations_map %>%

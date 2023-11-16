@@ -86,7 +86,7 @@ plot(img, axes = FALSE)
 
  - ¿Se concentran las variaciones residenciales durante alguna época concreta del año?
  
- - ¿Hay alguna dependencia de la cantidad de variaciones residenciales con la edad? Si es así, ¿depende también de la edad?
+ - ¿Hay alguna dependencia de la cantidad de variaciones residenciales con la edad? Si es así, ¿depende también del sexo?
  
  - ¿Cómo es la tasa de migración de España con el extranjero?
  
